@@ -14,31 +14,19 @@ class GeminiProvider with ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    // try {
-    //   final gemini = Gemini.instance;
-    //   final response = await gemini.text(query);
-    //
-    //   final answer = response?.output ?? 'Sorry, no response available.';
-    //   final result = GeminiResponseModel(userQuery: query, answer: answer);
-    //   _responses.insert(0, result);
-    // } catch (e) {
-    //   _responses.insert(
-    //     0,
-    //     GeminiResponseModel(userQuery: query, answer: 'Error: $e'),
-    //   );
-    // }
-
     try {
       final gemini = Gemini.instance;
       final response = await gemini.text(query);
 
+      //  Print the raw Gemini response to debug
       print('Gemini response: ${response?.output}');
 
       final answer = response?.output ?? 'Sorry, no response available.';
       final result = GeminiResponseModel(userQuery: query, answer: answer);
       _responses.insert(0, result);
-    } catch (e) {
+    } catch (e, stack) {
       print('Gemini error: $e'); // ✅ Print the error for debugging
+      print("Stack Trace: $stack");
       _responses.insert(
         0,
         GeminiResponseModel(userQuery: query, answer: 'Error: $e'),

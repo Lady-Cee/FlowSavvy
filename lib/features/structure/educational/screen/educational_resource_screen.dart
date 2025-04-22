@@ -103,10 +103,12 @@ class _EducationalResourceScreenState extends State<EducationalResourceScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => GeminiSearchScreen()),
-                  );
+                  Navigator.pushNamed(context, '/search');
+
+                  // Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(builder: (context) => GeminiSearchScreen()),
+                  // );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green.shade400,

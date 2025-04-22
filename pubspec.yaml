@@ -20,6 +20,7 @@ version: 1.0.0+1
 
 environment:
   sdk: ^3.5.3
+ # sdk: '>=3.4.3 <4.0.0'
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -33,8 +34,7 @@ dependencies:
   sqflite: ^2.2.5
   path: ^1.9.0
   provider: ^6.0.3
-  flutter_gemini: ^2.0.4
-  flutter_dotenv: ^5.2.1
+
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -43,12 +43,14 @@ dependencies:
   firebase_core: ^3.10.0
   firebase_auth: ^5.4.0
   cloud_firestore: ^5.6.1
+  flutter_gemini: ^3.0.0
+  flutter_dotenv: ^5.2.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_launcher_icons: ^0.13.1
-  intl: ^0.18.0
+  flutter_launcher_icons: ^0.14.3
+  intl: ^0.20.2
 
 flutter_launcher_icons:
   android: "launcher_icons"
