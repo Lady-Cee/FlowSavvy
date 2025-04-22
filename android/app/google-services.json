@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "776709123368",
+    "project_id": "flowsavvy-bc9b9",
+    "storage_bucket": "flowsavvy-bc9b9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:776709123368:android:2a38ccf672add91fb2b41d",
+        "android_client_info": {
+          "package_name": "com.example.flow_savvy"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAaZPqDK8ALVPmsLvmXIxdeR6Yyhq3bCvU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
