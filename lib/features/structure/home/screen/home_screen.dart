@@ -31,6 +31,9 @@ class HomeScreen extends StatelessWidget {
                 case 3:
                   Navigator.pushNamed(context, '/periodLog');
                   break;
+                case 4:
+                  Navigator.pushNamed(context, '/support');
+                  break;
               }
             },
             itemBuilder: (context) => [
@@ -71,6 +74,16 @@ class HomeScreen extends StatelessWidget {
                     Icon(Icons.calendar_today, color: Colors.pink),
                     SizedBox(width: 10),
                     Text('My Period Log'),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 4,
+                child: Row(
+                  children: [
+                    Icon(Icons.people_rounded, color: Colors.pink),
+                    SizedBox(width: 10),
+                    Text('Community Support'),
                   ],
                 ),
               ),
@@ -181,6 +194,12 @@ class HomeScreen extends StatelessWidget {
                       title: 'My Profile',
                       icon: Icons.person,
                       routeName: '/profile',
+                    ),
+                    _buildFeatureCard(
+                      context,
+                      title: 'Community Support',
+                      icon: Icons.people_rounded,
+                      routeName: '/support',
                     ),
                   ],
                 ),

@@ -1,10 +1,12 @@
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flow_savvy/features/providers/period_log_provider.dart';
+import 'package:flow_savvy/features/providers/product_provider.dart';
 import 'package:flow_savvy/features/structure/educational/screen/educational_resource_screen.dart';
 import 'package:flow_savvy/features/structure/gemini/gemini_search_screen.dart';
 import 'package:flow_savvy/features/structure/home/screen/home_screen.dart';
 import 'package:flow_savvy/features/structure/period/screen/period_log_screen.dart';
+import 'package:flow_savvy/features/structure/support/screen/community_support_screen.dart';
 import 'package:flow_savvy/features/structure/symptom/screen/symptom_log_screen.dart';
 import 'package:flow_savvy/features/structure/user/screen/user_profile_screen.dart';
 
@@ -12,9 +14,11 @@ import 'package:flutter/material.dart';import 'package:flutter_dotenv/flutter_do
 import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:provider/provider.dart';
 
+import 'features/providers/community_support_provider.dart';
 import 'features/providers/gemini_provider.dart';
 import 'features/providers/symptom_log_provider.dart';
 import 'features/providers/user_profile_provider.dart';
+import 'features/structure/product/screen/product_screen.dart';
 import 'features/structure/splash/splash_screen.dart';
 import 'firebase_options.dart';
 // import 'package:provider/provider.dart';
@@ -46,6 +50,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SymptomLogProvider()),
         ChangeNotifierProvider(create: (_) => PeriodLogProvider()),
         ChangeNotifierProvider(create: (_) => GeminiProvider()),
+        ChangeNotifierProvider(create: (_) => CommunitySupportProvider()),
+        ChangeNotifierProvider(create: (_) => ProductProvider()),
        // ChangeNotifierProvider(create: (_) => EducationalResourceProvider()),
         //ChangeNotifierProvider(create: (_) => sourceProvider()),
     ],
@@ -63,6 +69,8 @@ class MyApp extends StatelessWidget {
           '/educational': (_) => EducationalResourceScreen(),
           '/profile': (_) => UserProfileScreen(),
           '/search': (_) => GeminiSearchScreen(),
+          '/support' : (_) => CommunitySupportScreen(),
+          '/product' : (_) => ProductScreen(),
         },
       ),
     );
