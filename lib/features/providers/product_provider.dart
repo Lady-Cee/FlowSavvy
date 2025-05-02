@@ -10,14 +10,14 @@ class ProductProvider with ChangeNotifier {
       name: 'Heavy Duty',
       description: 'Affordable, Comfortable, eco-friendly menstrual pads.',
       imageUrl: 'https://padupcreations.com/wp-content/uploads/2024/04/heavy_duty_pack-removebg-preview.png',
-      link: 'https://padupcreations.com/shop/',
+      link: 'https://padupcreations.com/',
     ),
     Product(
       id: '2',
       name: 'Alora Premium Box Pack',
       description: 'Eco-friendly menstrual pads.',
       imageUrl: 'https://alorapads.com/wp-content/uploads/2024/10/Alora-Premium-Reusable-Pad-700x700.png',
-      link: 'https://alorapads.com/buy/',
+      link: 'https://alorapads.com/',
     ),
   ];
 
