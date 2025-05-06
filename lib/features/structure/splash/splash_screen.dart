@@ -1,3 +1,5 @@
+import 'package:flow_savvy/features/account/login/login_screen.dart';
+import 'package:flow_savvy/features/account/signup/signup_screen.dart';
 import 'package:flow_savvy/features/structure/home/screen/home_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -35,7 +37,7 @@ class SplashScreen extends StatelessWidget {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => HomeScreen()),
+                          MaterialPageRoute(builder: (context) => LoginScreen()),
                         );
                       },
                       style: ElevatedButton.styleFrom(

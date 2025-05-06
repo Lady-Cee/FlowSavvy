@@ -1,5 +1,8 @@
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flow_savvy/features/account/login/login_screen.dart';
+import 'package:flow_savvy/features/account/password/forgot_password_screen.dart';
+import 'package:flow_savvy/features/account/signup/signup_screen.dart';
 import 'package:flow_savvy/features/providers/period_log_provider.dart';
 import 'package:flow_savvy/features/providers/product_provider.dart';
 import 'package:flow_savvy/features/structure/educational/screen/educational_resource_screen.dart';
@@ -87,6 +90,9 @@ class MyApp extends StatelessWidget {
           '/doctor' : (_) => DoctorScreen(),
           '/mentalHealthProfessional' : (_) => MentalHealthProfessionalScreen(),
           '/communityAdmin' : (_) => CommunityAdminScreen(),
+          '/login' : (_) => LoginScreen(),
+          '/signup' : (_) => SignupScreen(),
+          '/forgotPassword' : (_) => ForgotPasswordScreen(),
 
         },
       ),
