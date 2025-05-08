@@ -86,7 +86,7 @@ class MenopauseScreen extends StatelessWidget {
                   );
                 },
                 icon: const Icon(Icons.medical_services),
-                label: const Text('Consult an Expert'),
+                label: const Text('Talk to an Expert'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.pink.shade400,
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
