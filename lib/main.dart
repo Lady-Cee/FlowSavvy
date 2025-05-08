@@ -8,6 +8,7 @@ import 'package:flow_savvy/features/providers/product_provider.dart';
 import 'package:flow_savvy/features/structure/educational/screen/educational_resource_screen.dart';
 import 'package:flow_savvy/features/structure/gemini/gemini_search_screen.dart';
 import 'package:flow_savvy/features/structure/home/screen/home_screen.dart';
+import 'package:flow_savvy/features/structure/menopause/menopause_screen.dart';
 import 'package:flow_savvy/features/structure/period/screen/period_log_screen.dart';
 import 'package:flow_savvy/features/structure/support/screen/community_support_screen.dart';
 import 'package:flow_savvy/features/structure/symptom/screen/symptom_log_screen.dart';
@@ -22,6 +23,7 @@ import 'features/providers/community_support_provider.dart';
 import 'features/providers/counsellor_provider.dart';
 import 'features/providers/doctor_provider.dart';
 import 'features/providers/gemini_provider.dart';
+import 'features/providers/menopause_provider.dart';
 import 'features/providers/mental_health_provider.dart';
 import 'features/providers/symptom_log_provider.dart';
 import 'features/providers/user_profile_provider.dart';
@@ -67,6 +69,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CounsellorProvider()),
         ChangeNotifierProvider(create: (_) => DoctorProvider()),
         ChangeNotifierProvider(create: (_) => MentalHealthProvider()),
+        ChangeNotifierProvider(create: (_) => MenopauseProvider()),
        // ChangeNotifierProvider(create: (_) => EducationalResourceProvider()),
 
     ],
@@ -93,6 +96,7 @@ class MyApp extends StatelessWidget {
           '/login' : (_) => LoginScreen(),
           '/signup' : (_) => SignupScreen(),
           '/forgotPassword' : (_) => ForgotPasswordScreen(),
+          '/menopause' : (_) => MenopauseScreen(),
 
         },
       ),
