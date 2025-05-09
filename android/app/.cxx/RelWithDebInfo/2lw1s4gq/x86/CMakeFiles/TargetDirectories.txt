@@ -1,0 +1,2 @@
+C:/Users/pc/AndroidStudioProjects/FlowSavvy/android/app/.cxx/RelWithDebInfo/2lw1s4gq/x86/CMakeFiles/edit_cache.dir
+C:/Users/pc/AndroidStudioProjects/FlowSavvy/android/app/.cxx/RelWithDebInfo/2lw1s4gq/x86/CMakeFiles/rebuild_cache.dir
