@@ -1,3 +1,4 @@
+import 'package:flow_savvy/features/services/firebase_auth_services.dart';
 import 'package:flutter/material.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -9,6 +10,24 @@ class ForgotPasswordScreen extends StatefulWidget {
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final emailController = TextEditingController();
+
+  final FireBaseAuthService authService = FireBaseAuthService();
+
+  void resetPassword()async{
+    String email = emailController.text.trim();
+    final message = await authService.resetPassword(email);
+
+    if (message == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Password reset email sent to $email!")),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    }
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,10 +43,23 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             ),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
-                // Handle password reset
-              },
+              onPressed: () => resetPassword(),
               child: Text("Reset Password"),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text("Remember your password? "),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pushNamed(context, '/login');
+                  },
+                  child: Text(
+                    "Login",
+                    style: TextStyle(color: Colors.blue),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../services/firebase_auth_services.dart';
+
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
 
@@ -13,6 +15,43 @@ class _SignupScreenState extends State<SignupScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
+
+  final FireBaseAuthService _authService = FireBaseAuthService();
+
+  void signUpUser() async {
+    final firstName = firstNameController.text.trim();
+    final surname = surnameController.text.trim();
+    final email = emailController.text.trim();
+    final password = passwordController.text;
+    final confirmPassword = confirmPasswordController.text;
+
+    if (firstName.isEmpty || surname.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Please fill all fields")),
+      );
+      return;
+    }
+
+    if (password != confirmPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Passwords do not match")),
+      );
+      return;
+    }
+
+    final result = await _authService.signUp(email, password, firstName, surname);
+
+    if (result == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Signup successful! Please log in.")),
+      );
+      Navigator.pushNamed(context, '/login');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result)),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,11 +88,24 @@ class _SignupScreenState extends State<SignupScreen> {
               decoration: InputDecoration(labelText: "Confirm Password"),
             ),
             SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/login');
-              },
-              child: Text("Sign Up"),
+        ElevatedButton(
+          onPressed: () => signUpUser() ,
+          child: Text("Sign Up"),
+        ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text("Already have an account? "),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pushNamed(context, '/login');
+                  },
+                  child: Text(
+                    "Login",
+                    style: TextStyle(color: Colors.blue),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
