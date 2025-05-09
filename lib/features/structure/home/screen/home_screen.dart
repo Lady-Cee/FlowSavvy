@@ -22,6 +22,7 @@ final FireBaseAuthService auth = FireBaseAuthService();
 
   @override
   Widget build(BuildContext context) {
+    final profile = Provider.of<UserProfileProvider>(context).userProfile;
     return Scaffold(
       appBar: AppBar(
         title: Text('Flow Savvy Dashboard'),
@@ -49,62 +50,179 @@ final FireBaseAuthService auth = FireBaseAuthService();
                 case 4:
                   Navigator.pushNamed(context, '/support');
                   break;
+                case 5:
+                  Navigator.pushNamed(context, '/menopause');
+                  break;
               }
             },
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 0,
-                child: Row(
-                  children: [
-                    Icon(Icons.monitor_heart, color: Colors.pink),
-                    SizedBox(width: 10),
-                    Text('My Symptom Log'),
-                  ],
+            itemBuilder: (context) {
+              final items = <PopupMenuEntry<int>>[
+                PopupMenuItem(
+                  value: 0,
+                  child: Row(
+                    children: [
+                      Icon(Icons.monitor_heart, color: Colors.pink),
+                      SizedBox(width: 10),
+                      Text('My Symptom Log'),
+                    ],
+                  ),
                 ),
-              ),
-              PopupMenuItem(
-                value: 1,
-                child: Row(
-                  children: [
-                    Icon(Icons.library_books, color: Colors.pink),
-                    SizedBox(width: 10),
-                    Text('Educational Resource'),
-                  ],
+                PopupMenuItem(
+                  value: 1,
+                  child: Row(
+                    children: [
+                      Icon(Icons.library_books, color: Colors.pink),
+                      SizedBox(width: 10),
+                      Text('Educational Resource'),
+                    ],
+                  ),
                 ),
-              ),
-              PopupMenuItem(
-                value: 2,
-                child: Row(
-                  children: [
-                    Icon(Icons.person, color: Colors.pink),
-                    SizedBox(width: 10),
-                    Text('My Profile'),
-                  ],
+                PopupMenuItem(
+                  value: 2,
+                  child: Row(
+                    children: [
+                      Icon(Icons.person, color: Colors.pink),
+                      SizedBox(width: 10),
+                      Text('My Profile'),
+                    ],
+                  ),
                 ),
-              ),
-              PopupMenuItem(
-                value: 3,
-                child: Row(
-                  children: [
-                    Icon(Icons.calendar_today, color: Colors.pink),
-                    SizedBox(width: 10),
-                    Text('My Period Log'),
-                  ],
+                PopupMenuItem(
+                  value: 3,
+                  child: Row(
+                    children: [
+                      Icon(Icons.calendar_today, color: Colors.pink),
+                      SizedBox(width: 10),
+                      Text('My Period Log'),
+                    ],
+                  ),
                 ),
-              ),
-              PopupMenuItem(
-                value: 4,
-                child: Row(
-                  children: [
-                    Icon(Icons.people_rounded, color: Colors.pink),
-                    SizedBox(width: 10),
-                    Text('Community Support'),
-                  ],
+                PopupMenuItem(
+                  value: 4,
+                  child: Row(
+                    children: [
+                      Icon(Icons.people_rounded, color: Colors.pink),
+                      SizedBox(width: 10),
+                      Text('Community Support'),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ];
+
+              // Only show Menopause Tips if profile is not null and age >= 40
+              if (profile != null && profile.age >= 40) {
+                items.add(
+                  PopupMenuItem(
+                    value: 5,
+                    child: Row(
+                      children: [
+                        Icon(Icons.female, color: Colors.pink),
+                        SizedBox(width: 10),
+                        Text('Menopause Tips'),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              return items;
+            },
           ),
           IconButton(onPressed: () => logout(context), icon: Icon(Icons.exit_to_app), tooltip: 'logout',)
+
+
+          // PopupMenuButton<int>(
+          //   icon: Padding(
+          //     padding: const EdgeInsets.all(8.0),
+          //     child: Icon(Icons.menu),
+          //   ),
+          //   tooltip: 'Menu',
+          //   onSelected: (value) {
+          //     switch (value) {
+          //       case 0:
+          //         Navigator.pushNamed(context, '/symptomLog');
+          //         break;
+          //       case 1:
+          //         Navigator.pushNamed(context, '/educational');
+          //         break;
+          //       case 2:
+          //         Navigator.pushNamed(context, '/profile');
+          //         break;
+          //       case 3:
+          //         Navigator.pushNamed(context, '/periodLog');
+          //         break;
+          //       case 4:
+          //         Navigator.pushNamed(context, '/support');
+          //         break;
+          //       case 5:
+          //         Navigator.pushNamed(context, '/menopause');
+          //         break;
+          //     }
+          //   },
+          //   itemBuilder: (context) => [
+          //     PopupMenuItem(
+          //       value: 0,
+          //       child: Row(
+          //         children: [
+          //           Icon(Icons.monitor_heart, color: Colors.pink),
+          //           SizedBox(width: 10),
+          //           Text('My Symptom Log'),
+          //         ],
+          //       ),
+          //     ),
+          //     PopupMenuItem(
+          //       value: 1,
+          //       child: Row(
+          //         children: [
+          //           Icon(Icons.library_books, color: Colors.pink),
+          //           SizedBox(width: 10),
+          //           Text('Educational Resource'),
+          //         ],
+          //       ),
+          //     ),
+          //     PopupMenuItem(
+          //       value: 2,
+          //       child: Row(
+          //         children: [
+          //           Icon(Icons.person, color: Colors.pink),
+          //           SizedBox(width: 10),
+          //           Text('My Profile'),
+          //         ],
+          //       ),
+          //     ),
+          //     PopupMenuItem(
+          //       value: 3,
+          //       child: Row(
+          //         children: [
+          //           Icon(Icons.calendar_today, color: Colors.pink),
+          //           SizedBox(width: 10),
+          //           Text('My Period Log'),
+          //         ],
+          //       ),
+          //     ),
+          //     PopupMenuItem(
+          //       value: 4,
+          //       child: Row(
+          //         children: [
+          //           Icon(Icons.people_rounded, color: Colors.pink),
+          //           SizedBox(width: 10),
+          //           Text('Community Support'),
+          //         ],
+          //       ),
+          //     ),
+          //    // if (profile.age >= 40)
+          //     PopupMenuItem(
+          //       value: 5,
+          //       child: Row(
+          //         children: [
+          //           Icon(Icons.female, color: Colors.pink),
+          //           SizedBox(width: 10),
+          //           Text('Menopause Tips'),
+          //         ],
+          //       ),
+          //     ),
+          //   ],
+          // ),
         ],
       ),
       body: Consumer<UserProfileProvider>(
@@ -217,6 +335,14 @@ final FireBaseAuthService auth = FireBaseAuthService();
                       icon: Icons.people_rounded,
                       routeName: '/support',
                     ),
+                    // ✅ Show this only if age >= 40
+                    if (profile.age >= 40)
+                      _buildFeatureCard(
+                        context,
+                        title: 'Menopause Tips',
+                        icon: Icons.female,
+                        routeName: '/menopause',
+                      ),
                   ],
                 ),
               ],

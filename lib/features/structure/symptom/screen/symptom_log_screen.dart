@@ -16,7 +16,7 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
   List<String> _selectedMood = [];
   int _painLevel = 0;
   List<String> _suggestedRemedies = [];
-  List<String> _suggestedMedications = [];
+  //List<String> _suggestedMedications = [];
 
   final Map<String, List<String>> _remedySuggestions = {
     'Cramps': ['Hot water bottle', 'Gentle yoga', 'Chamomile tea', 'Warm bath', 'Stretching'],
@@ -31,18 +31,18 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
     'Tender Breasts': ['Cold compress', 'Supportive bra', 'Vitamin E', 'Massage', 'Reduce caffeine'],
   };
 
-  final Map<String, List<String>> _medicationSuggestions = {
-    'Cramps': ['Paracetamol', 'Ibuprofen', 'Midol', 'Naproxen', 'Buscopan'],
-    'Headache': ['Ibuprofen', 'Paracetamol', 'Excedrin', 'Aspirin', 'Naproxen'],
-    'Back Pain': ['Ibuprofen', 'Paracetamol', 'Diclofenac', 'Topical creams', 'Muscle relaxants'],
-    'Nausea': ['Domperidone', 'Ondansetron', 'Antacids', 'Ginger capsules', 'Meclizine'],
-    'Fatigue': ['Iron supplement', 'B-complex', 'Multivitamins', 'Folic acid', 'Energy boosters'],
-    'Acne': ['Benzoyl peroxide', 'Salicylic acid', 'Oral antibiotics', 'Topical retinoids', 'Hormonal therapy'],
-    'Mood Swings': ['SSRIs', 'Vitamin B6', 'Magnesium', 'St. John’s Wort', 'Evening primrose oil'],
-    'Bloating': ['Simethicone', 'Activated charcoal', 'Probiotics', 'Antacids', 'Digestive enzymes'],
-    'Diarrhea': ['Loperamide', 'ORS', 'Probiotics', 'Bismuth subsalicylate', 'Antispasmodics'],
-    'Tender Breasts': ['Ibuprofen', 'Paracetamol', 'Evening primrose oil', 'Vitamin E', 'Cold compress'],
-  };
+  // final Map<String, List<String>> _medicationSuggestions = {
+  //   'Cramps': ['Paracetamol', 'Ibuprofen', 'Midol', 'Naproxen', 'Buscopan'],
+  //   'Headache': ['Ibuprofen', 'Paracetamol', 'Excedrin', 'Aspirin', 'Naproxen'],
+  //   'Back Pain': ['Ibuprofen', 'Paracetamol', 'Diclofenac', 'Topical creams', 'Muscle relaxants'],
+  //   'Nausea': ['Domperidone', 'Ondansetron', 'Antacids', 'Ginger capsules', 'Meclizine'],
+  //   'Fatigue': ['Iron supplement', 'B-complex', 'Multivitamins', 'Folic acid', 'Energy boosters'],
+  //   'Acne': ['Benzoyl peroxide', 'Salicylic acid', 'Oral antibiotics', 'Topical retinoids', 'Hormonal therapy'],
+  //   'Mood Swings': ['SSRIs', 'Vitamin B6', 'Magnesium', 'St. John’s Wort', 'Evening primrose oil'],
+  //   'Bloating': ['Simethicone', 'Activated charcoal', 'Probiotics', 'Antacids', 'Digestive enzymes'],
+  //   'Diarrhea': ['Loperamide', 'ORS', 'Probiotics', 'Bismuth subsalicylate', 'Antispasmodics'],
+  //   'Tender Breasts': ['Ibuprofen', 'Paracetamol', 'Evening primrose oil', 'Vitamin E', 'Cold compress'],
+  // };
 
   final Map<String, String> _motivations = {
     'Cramps': 'You are stronger than the pain. Hang in there!',
@@ -62,10 +62,10 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
     final meds = <String>{};
     for (var symptom in _selectedSymptoms) {
       remedies.addAll(_remedySuggestions[symptom] ?? []);
-      meds.addAll(_medicationSuggestions[symptom] ?? []);
+     // meds.addAll(_medicationSuggestions[symptom] ?? []);
     }
     _suggestedRemedies = remedies.toList();
-    _suggestedMedications = meds.toList();
+    //_suggestedMedications = meds.toList();
   }
 
   String _getMotivation() {
@@ -93,7 +93,7 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
       symptoms: List.from(_selectedSymptoms),
       mood: List.from(_selectedMood),
       painLevel: _painLevel,
-      medications: List.from(_suggestedMedications),
+     // medications: List.from(_suggestedMedications),
       remedies: List.from(_suggestedRemedies),
       motivation: _getMotivation(),
     );
@@ -105,7 +105,7 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
       _selectedMood.clear();
       _painLevel = 0;
       _suggestedRemedies.clear();
-      _suggestedMedications.clear();
+    //  _suggestedMedications.clear();
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -246,7 +246,7 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
                         Text('Mood: ${log.mood.join(', ')}'),
                         Text('Pain Level: ${log.painLevel}'),
                         Text('Remedies: ${log.remedies.join(', ')}'),
-                        Text('Medications: ${log.medications.join(', ')}'),
+                       // Text('Medications: ${log.medications.join(', ')}'),
                         SizedBox(height: 8),
                         Text('Motivation: ${log.motivation}',
                             style: TextStyle(fontStyle: FontStyle.italic)),
