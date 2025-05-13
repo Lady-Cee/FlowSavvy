@@ -1,0 +1,1 @@
+C:\Users\pc\AndroidStudioProjects\FlowSavvy\build\app\intermediates\cxx\RelWithDebInfo\2lw1s4gq\obj\arm64-v8a

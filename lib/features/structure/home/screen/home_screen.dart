@@ -1,14 +1,28 @@
 import 'package:flow_savvy/features/models/user_profilel.dart';
+import 'package:flow_savvy/features/services/firebase_auth_services.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:path/path.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../providers/user_profile_provider.dart';
 
 class HomeScreen extends StatelessWidget {
+final FireBaseAuthService auth = FireBaseAuthService();
+
+  void logout(BuildContext context) async {
+    await auth.logout();
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('rememberMe', false);
+
+    Navigator.pushReplacementNamed(context, '/login');
+  }
+
+
   @override
   Widget build(BuildContext context) {
     final profile = Provider.of<UserProfileProvider>(context).userProfile;
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Flow Savvy Dashboard'),
@@ -113,7 +127,9 @@ class HomeScreen extends StatelessWidget {
 
               return items;
             },
-          )
+          ),
+          IconButton(onPressed: () => logout(context), icon: Icon(Icons.exit_to_app), tooltip: 'logout',)
+
 
           // PopupMenuButton<int>(
           //   icon: Padding(

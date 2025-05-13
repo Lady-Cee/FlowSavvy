@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../services/firebase_auth_services.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,6 +13,63 @@ class _LoginScreenState extends State<LoginScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   bool rememberMe = false;
+
+  final FireBaseAuthService auth = FireBaseAuthService();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRememberMe();
+    _checkLoginStatus();
+  }
+
+  Future<void> _loadRememberMe() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      rememberMe = prefs.getBool('rememberMe') ?? false;
+    });
+  }
+
+  Future<void> _checkLoginStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final remember = prefs.getBool('rememberMe') ?? false;
+    if (remember && auth.currentUser != null) {
+      Navigator.pushReplacementNamed(context, '/home');
+    }
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  bool _isLoading = false;
+
+  void loginUser() async {
+    final email = emailController.text.trim();
+    final password = passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      _showMessage('Please enter both email and password.');
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    final error = await auth.login(email, password);
+
+    setState(() => _isLoading = false);
+
+    if (error == null) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('rememberMe', rememberMe);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pushReplacementNamed(context, '/home');
+      });
+    } else {
+      _showMessage(error);
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -56,10 +115,10 @@ class _LoginScreenState extends State<LoginScreen> {
               ],
             ),
             SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/home');
-              },
+            _isLoading
+                ? Center(child: CircularProgressIndicator())
+                : ElevatedButton(
+              onPressed: loginUser,
               child: Text("Login"),
             ),
             SizedBox(height: 20),
