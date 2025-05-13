@@ -27,31 +27,17 @@ class ProductScreen extends StatelessWidget {
               subtitle: Text(product.description),
               trailing: Icon(Icons.arrow_forward),
 
-              // onTap: () async {
-              //   final url = Uri.parse(product.link);
-              //   if (await canLaunchUrl(url)) {
-              //     await launchUrl(url);
-              //   } else {
-              //     ScaffoldMessenger.of(context).showSnackBar(
-              //       SnackBar(content: Text('Could not launch product link')),
-              //     );
-              //   }
-              // },
                 onTap: () async {
                   final url = Uri.parse(product.link);
-                  if (await canLaunchUrl(url)) {
-                    await launchUrl(
-                      url,
-                      mode: LaunchMode.externalApplication,
-                    );
+
+                  if (await launchUrl(url, mode: LaunchMode.inAppWebView)) {
+                    // print("Launched in in-app view");
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('Could not launch product link')),
                     );
                   }
                 }
-
-
             ),
           );
         },

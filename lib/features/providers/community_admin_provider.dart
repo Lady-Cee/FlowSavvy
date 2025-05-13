@@ -7,7 +7,7 @@ class CommunityAdminProvider with ChangeNotifier {
     CommunityAdmin(
       id: '1',
       name: 'Ms. Cynthia Enweonwu',
-      role: 'Community Manager',
+      role: 'Community Manager,',
       imageUrl: 'https://img.freepik.com/free-photo/medium-shot-smiley-woman-teaching_23-2149272223.jpg',
       bio: 'Ensures a safe and engaging community environment.',
       contactInfo: 'ccenweonwu@gmail.com',

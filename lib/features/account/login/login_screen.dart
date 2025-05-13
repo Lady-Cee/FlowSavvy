@@ -14,6 +14,14 @@ class _LoginScreenState extends State<LoginScreen> {
   final passwordController = TextEditingController();
   bool rememberMe = false;
 
+  bool _obscureText = true;
+
+  void _toggleVisibility() {
+    setState(() {
+      _obscureText = !_obscureText;
+    });
+  }
+
   final FireBaseAuthService auth = FireBaseAuthService();
 
   @override
@@ -82,13 +90,28 @@ class _LoginScreenState extends State<LoginScreen> {
           children: [
             TextField(
               controller: emailController,
-              decoration: InputDecoration(labelText: "Email"),
+              decoration: InputDecoration(
+                labelText: "Email",
+                prefixIcon: Icon(Icons.email), // Email icon added here
+              ),
             ),
             SizedBox(height: 10),
             TextField(
-              controller: passwordController,
-              obscureText: true,
-              decoration: InputDecoration(labelText: "Password"),
+              // controller: passwordController,
+              // obscureText: true,
+              // decoration: InputDecoration(labelText: "Password"),
+                    controller: passwordController,
+                    obscureText: _obscureText,
+                    decoration: InputDecoration(
+                    labelText: "Password",
+                    prefixIcon: Icon(Icons.lock),
+                    suffixIcon: IconButton(
+                    icon: Icon(
+                    _obscureText ? Icons.visibility_off : Icons.visibility,
+                    ),
+                    onPressed: _toggleVisibility,
+                            ),
+                    ),
             ),
             SizedBox(height: 10),
             Row(
