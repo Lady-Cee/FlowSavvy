@@ -39,7 +39,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           children: [
             TextField(
               controller: emailController,
-              decoration: InputDecoration(labelText: "Email Address"),
+              decoration: InputDecoration(
+                labelText: "Email",
+                prefixIcon: Icon(Icons.email), // Email icon added here
+              ),
             ),
             SizedBox(height: 20),
             ElevatedButton(

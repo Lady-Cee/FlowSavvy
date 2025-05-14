@@ -18,12 +18,28 @@ class _SignupScreenState extends State<SignupScreen> {
 
   final FireBaseAuthService _authService = FireBaseAuthService();
 
+  bool _obscureText = true;
+  bool _obscureText1 = true;
+
+  void _toggleVisibility() {
+    setState(() {
+      _obscureText = !_obscureText;
+    });
+  }
+
+  void _toggleVisibility1() {
+    setState(() {
+      _obscureText1 = !_obscureText1;
+    });
+  }
+
   void signUpUser() async {
     final firstName = firstNameController.text.trim();
     final surname = surnameController.text.trim();
     final email = emailController.text.trim();
     final password = passwordController.text;
     final confirmPassword = confirmPasswordController.text;
+
 
     if (firstName.isEmpty || surname.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -63,29 +79,56 @@ class _SignupScreenState extends State<SignupScreen> {
           children: [
             TextField(
               controller: firstNameController,
-              decoration: InputDecoration(labelText: "First Name"),
+              decoration: InputDecoration(
+                labelText: "First Name",
+                prefixIcon: Icon(Icons.person), // Email icon added here
+              ),
             ),
             SizedBox(height: 10),
             TextField(
               controller: surnameController,
-              decoration: InputDecoration(labelText: "Surname",)
+              decoration: InputDecoration(
+                labelText: "Surname",
+                prefixIcon: Icon(Icons.person_add), // Email icon added here
+              ),
             ),
             SizedBox(height: 10),
             TextField(
               controller: emailController,
-              decoration: InputDecoration(labelText: "Email"),
+              decoration: InputDecoration(
+                labelText: "Email",
+                prefixIcon: Icon(Icons.email), // Email icon added here
+              ),
             ),
             SizedBox(height: 10),
             TextField(
               controller: passwordController,
-              obscureText: true,
-              decoration: InputDecoration(labelText: "Password"),
+              obscureText: _obscureText,
+              decoration: InputDecoration(
+                labelText: "Password",
+                prefixIcon: Icon(Icons.lock),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureText ? Icons.visibility_off : Icons.visibility,
+                  ),
+                  onPressed: _toggleVisibility,
+                ),
+              ),
             ),
             SizedBox(height: 10),
             TextField(
               controller: confirmPasswordController,
-              obscureText: true,
-              decoration: InputDecoration(labelText: "Confirm Password"),
+              obscureText: _obscureText1,
+              decoration: InputDecoration(
+                labelText: "Confirm Password",
+                prefixIcon: Icon(Icons.lock),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureText1 ? Icons.visibility_off : Icons.visibility,
+                  ),
+                  onPressed: _toggleVisibility1,
+                ),
+              ),
             ),
             SizedBox(height: 20),
         ElevatedButton(
