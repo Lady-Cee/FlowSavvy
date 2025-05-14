@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../providers/auth_provider.dart';
 import '../../services/firebase_auth_services.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -16,7 +18,7 @@ class _SignupScreenState extends State<SignupScreen> {
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
 
-  final FireBaseAuthService _authService = FireBaseAuthService();
+  // final FireBaseAuthService _authService = FireBaseAuthService();
 
   bool _obscureText = true;
   bool _obscureText1 = true;
@@ -55,7 +57,8 @@ class _SignupScreenState extends State<SignupScreen> {
       return;
     }
 
-    final result = await _authService.signUp(email, password, firstName, surname);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final result = await authProvider.signUp(email, password, firstName, surname);
 
     if (result == null) {
       ScaffoldMessenger.of(context).showSnackBar(

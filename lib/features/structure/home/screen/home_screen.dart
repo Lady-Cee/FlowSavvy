@@ -5,16 +5,17 @@ import 'package:intl/intl.dart';
 import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../providers/auth_provider.dart';
 import '../../../providers/user_profile_provider.dart';
 
 class HomeScreen extends StatelessWidget {
-final FireBaseAuthService auth = FireBaseAuthService();
+// final FireBaseAuthService auth = FireBaseAuthService();
 
   void logout(BuildContext context) async {
-    await auth.logout();
-
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    await authProvider.logout();
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('rememberMe', false);
+    // await prefs.setBool('rememberMe', false);
 
     Navigator.pushReplacementNamed(context, '/login');
   }
