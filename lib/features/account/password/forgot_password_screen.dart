@@ -1,5 +1,8 @@
 import 'package:flow_savvy/features/services/firebase_auth_services.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../providers/auth_provider.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -11,16 +14,16 @@ class ForgotPasswordScreen extends StatefulWidget {
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final emailController = TextEditingController();
 
-  final FireBaseAuthService authService = FireBaseAuthService();
-
   void resetPassword()async{
     String email = emailController.text.trim();
-    final message = await authService.resetPassword(email);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final message = await authProvider.resetPassword(email);
 
     if (message == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Password reset email sent to $email!")),
       );
+      emailController.clear();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(message)),

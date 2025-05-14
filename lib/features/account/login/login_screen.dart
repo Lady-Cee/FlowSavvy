@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../services/firebase_auth_services.dart';
+import '../../providers/auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -12,9 +13,8 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-  bool rememberMe = false;
-
   bool _obscureText = true;
+  bool _isLoading = false;
 
   void _toggleVisibility() {
     setState(() {
@@ -22,26 +22,31 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
-  final FireBaseAuthService auth = FireBaseAuthService();
-
   @override
   void initState() {
     super.initState();
-    _loadRememberMe();
+    _loadLoginPreferences();
     _checkLoginStatus();
   }
 
-  Future<void> _loadRememberMe() async {
+  Future<void> _loadLoginPreferences() async {
     final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      rememberMe = prefs.getBool('rememberMe') ?? false;
-    });
+    final remember = prefs.getBool('rememberMe') ?? false;
+    final savedEmail = prefs.getString('rememberedEmail') ?? '';
+
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    authProvider.toggleRememberMe(remember);
+
+    if (remember) {
+      emailController.text = savedEmail;
+    }
   }
 
   Future<void> _checkLoginStatus() async {
     final prefs = await SharedPreferences.getInstance();
     final remember = prefs.getBool('rememberMe') ?? false;
-    if (remember && auth.currentUser != null) {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    if (remember && authProvider.currentUser != null) {
       Navigator.pushReplacementNamed(context, '/home');
     }
   }
@@ -50,9 +55,8 @@ class _LoginScreenState extends State<LoginScreen> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 
-  bool _isLoading = false;
-
   void loginUser() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final email = emailController.text.trim();
     final password = passwordController.text;
 
@@ -62,25 +66,28 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     setState(() => _isLoading = true);
-
-    final error = await auth.login(email, password);
-
+    final error = await authProvider.login(email, password);
     setState(() => _isLoading = false);
 
+    final prefs = await SharedPreferences.getInstance();
+
     if (error == null) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('rememberMe', rememberMe);
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.pushReplacementNamed(context, '/home');
-      });
+      await prefs.setBool('rememberMe', authProvider.rememberMe);
+      if (authProvider.rememberMe) {
+        await prefs.setString('rememberedEmail', email);
+      } else {
+        await prefs.remove('rememberedEmail');
+      }
+      Navigator.pushReplacementNamed(context, '/home');
     } else {
       _showMessage(error);
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+
     return Scaffold(
       appBar: AppBar(title: Text("Login")),
       body: Padding(
@@ -92,36 +99,29 @@ class _LoginScreenState extends State<LoginScreen> {
               controller: emailController,
               decoration: InputDecoration(
                 labelText: "Email",
-                prefixIcon: Icon(Icons.email), // Email icon added here
+                prefixIcon: Icon(Icons.email),
               ),
             ),
             SizedBox(height: 10),
             TextField(
-              // controller: passwordController,
-              // obscureText: true,
-              // decoration: InputDecoration(labelText: "Password"),
-                    controller: passwordController,
-                    obscureText: _obscureText,
-                    decoration: InputDecoration(
-                    labelText: "Password",
-                    prefixIcon: Icon(Icons.lock),
-                    suffixIcon: IconButton(
-                    icon: Icon(
-                    _obscureText ? Icons.visibility_off : Icons.visibility,
-                    ),
-                    onPressed: _toggleVisibility,
-                            ),
-                    ),
+              controller: passwordController,
+              obscureText: _obscureText,
+              decoration: InputDecoration(
+                labelText: "Password",
+                prefixIcon: Icon(Icons.lock),
+                suffixIcon: IconButton(
+                  icon: Icon(_obscureText ? Icons.visibility_off : Icons.visibility),
+                  onPressed: _toggleVisibility,
+                ),
+              ),
             ),
             SizedBox(height: 10),
             Row(
               children: [
                 Checkbox(
-                  value: rememberMe,
+                  value: authProvider.rememberMe,
                   onChanged: (val) {
-                    setState(() {
-                      rememberMe = val!;
-                    });
+                    authProvider.toggleRememberMe(val ?? false);
                   },
                 ),
                 Text("Remember me"),

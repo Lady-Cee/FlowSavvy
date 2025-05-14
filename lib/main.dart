@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';import 'package:flutter_dotenv/flutter_do
 import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:provider/provider.dart';
 
+import 'features/providers/auth_provider.dart';
 import 'features/providers/community_admin_provider.dart';
 import 'features/providers/community_support_provider.dart';
 import 'features/providers/counsellor_provider.dart';
@@ -27,6 +28,7 @@ import 'features/providers/menopause_provider.dart';
 import 'features/providers/mental_health_provider.dart';
 import 'features/providers/symptom_log_provider.dart';
 import 'features/providers/user_profile_provider.dart';
+import 'features/services/firebase_auth_services.dart';
 import 'features/structure/product/screen/product_screen.dart';
 import 'features/structure/splash/splash_screen.dart';
 import 'features/structure/support/screen/community_admin_screen.dart';
@@ -70,6 +72,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => DoctorProvider()),
         ChangeNotifierProvider(create: (_) => MentalHealthProvider()),
         ChangeNotifierProvider(create: (_) => MenopauseProvider()),
+        Provider<FireBaseAuthService>(create: (_) => FireBaseAuthService(),),
+        ChangeNotifierProvider<AuthProvider>( create: (context) => AuthProvider(context.read<FireBaseAuthService>()),),
        // ChangeNotifierProvider(create: (_) => EducationalResourceProvider()),
 
     ],
