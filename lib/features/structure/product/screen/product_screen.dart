@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -39,19 +40,15 @@ class ProductScreen extends StatelessWidget {
               // },
                 onTap: () async {
                   final url = Uri.parse(product.link);
-                  if (await canLaunchUrl(url)) {
-                    await launchUrl(
-                      url,
-                      mode: LaunchMode.externalApplication,
-                    );
+
+                  if (await launchUrl(url, mode: LaunchMode.inAppWebView)) {
+                    // print("Launched in in-app view");
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('Could not launch product link')),
                     );
                   }
                 }
-
-
             ),
           );
         },
