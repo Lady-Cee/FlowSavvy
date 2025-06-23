@@ -1,5 +1,6 @@
 import 'package:flow_savvy/features/models/user_profilel.dart';
 import 'package:flow_savvy/features/services/firebase_auth_services.dart';
+import 'package:flow_savvy/features/utils/app_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart';
@@ -19,6 +20,8 @@ class HomeScreen extends StatelessWidget {
 
     Navigator.pushReplacementNamed(context, '/login');
   }
+
+  final AppStrings appStrings = AppStrings();
 
 
   @override
@@ -236,7 +239,7 @@ class HomeScreen extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Please complete your profile to get predictions.',
+                    appStrings.defaultText,
                     style: TextStyle(fontSize: 16),
                     textAlign: TextAlign.center,
                   ),

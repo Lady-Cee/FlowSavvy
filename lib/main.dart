@@ -8,11 +8,13 @@ import 'package:flow_savvy/features/providers/product_provider.dart';
 import 'package:flow_savvy/features/structure/educational/screen/educational_resource_screen.dart';
 import 'package:flow_savvy/features/structure/gemini/gemini_search_screen.dart';
 import 'package:flow_savvy/features/structure/home/screen/home_screen.dart';
+import 'package:flow_savvy/features/structure/home/screen/test_screen.dart';
 import 'package:flow_savvy/features/structure/menopause/menopause_screen.dart';
 import 'package:flow_savvy/features/structure/period/screen/period_log_screen.dart';
 import 'package:flow_savvy/features/structure/support/screen/community_support_screen.dart';
 import 'package:flow_savvy/features/structure/symptom/screen/symptom_log_screen.dart';
 import 'package:flow_savvy/features/structure/user/screen/user_profile_screen.dart';
+import 'package:flow_savvy/features/theme/app_theme.dart';
 
 import 'package:flutter/material.dart';import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_gemini/flutter_gemini.dart';
@@ -35,6 +37,8 @@ import 'features/structure/support/screen/community_admin_screen.dart';
 import 'features/structure/support/screen/counsellor_screen.dart';
 import 'features/structure/support/screen/doctor_screen.dart';
 import 'features/structure/support/screen/mental_health_professional_screen.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'features/utils/app_strings.dart';
 import 'firebase_options.dart';
 // import 'package:provider/provider.dart';
 // import 'features/providers/educational_resource_provider.dart';
@@ -74,17 +78,38 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => MenopauseProvider()),
         Provider<FireBaseAuthService>(create: (_) => FireBaseAuthService(),),
         ChangeNotifierProvider<AuthProvider>( create: (context) => AuthProvider(context.read<FireBaseAuthService>()),),
+        Provider<AppTheme>(create:(_) => AppTheme() ),
        // ChangeNotifierProvider(create: (_) => EducationalResourceProvider()),
 
     ],
       child: MaterialApp(
         title: 'Menstrual Health Tracker',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
+        theme: AppTheme().lightMode,
           debugShowCheckedModeBanner: false,
-        home: SplashScreen(),
+        locale: Locale('en'),
+        supportedLocales: const [
+          Locale('en'),
+          // Locale('yo'),
+          // Locale('ha'),
+          // Locale('ig'),
+        ],
+        localizationsDelegates: [
+          StringsDelegate(), // Renamed for clarity
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        localeResolutionCallback: (locale, supportedLocales) {
+          if (supportedLocales.contains(locale)) {
+            return locale;
+          }
+          // If not supported, fallback to English
+          return const Locale('en');
+        },
+        // home: SplashScreen(),
+        home: TestScreen(),
         routes: {
+          '/test': (_) => TestScreen(),
           '/home': (_) => HomeScreen(),
           '/periodLog': (_) => PeriodLogScreen(),
           '/symptomLog': (_) => SymptomLogScreen(),
@@ -106,4 +131,22 @@ class MyApp extends StatelessWidget {
       ),
     );
   }
+}
+
+class StringsDelegate extends LocalizationsDelegate<AppStrings> {
+  @override
+  bool isSupported(Locale locale) =>
+      ['en', 'yo', 'ha', 'ig'].contains(locale.languageCode);
+
+  @override
+  Future<AppStrings> load(Locale locale) async {
+    if (!isSupported(locale)) {
+      locale = const Locale('en'); // Default to English
+    }
+    await AppStrings.load(locale);
+    return AppStrings();
+  }
+
+  @override
+  bool shouldReload(LocalizationsDelegate<AppStrings> old) => false;
 }
