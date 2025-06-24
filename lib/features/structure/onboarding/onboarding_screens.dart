@@ -68,9 +68,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 style:
                                     AppTextStyles.mediumTextSemiBold(context)),
                             SizedBox(height: 12),
-                            Text(content.description,
-                                textAlign: TextAlign.center,
-                                style: AppTextStyles.smallTextRegular(context)),
+                            FittedBox(
+                              child: Text(content.description,
+                                  textAlign: TextAlign.center,
+                                  style: AppTextStyles.smallTextRegular(context)),
+                            ),
                           ],
                         ),
                       );
