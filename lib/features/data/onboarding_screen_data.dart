@@ -22,7 +22,7 @@ final List<OnboardingContent> onboardingPages = [
   ),
   OnboardingContent(
     image: 'assets/images/onboarding/onboarding4.png',
-    title: appStrings.onboardingHeaderTitle3,
-    description: appStrings.onboardingHeaderSubTitle3,
+    title: appStrings.onboardingHeaderTitle4,
+    description: appStrings.onboardingHeaderSubTitle4,
   ),
 ];

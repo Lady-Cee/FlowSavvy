@@ -18,6 +18,8 @@ class AppStrings {
         'onboardingHeaderSubTitle2': 'Log how you feel daily--track your mood, cramps, \ncravings, and more.',
         'onboardingHeaderTitle3': 'You’re Not Alone',
         'onboardingHeaderSubTitle3': 'Get trusted answers, connect with others, and \nlearn at your pace',
+        'onboardingHeaderTitle4': 'Join a community that cares',
+        'onboardingHeaderSubTitle4': 'Trust us to keep you informed, and \nconnected all at once',
 
 
 
@@ -74,7 +76,8 @@ class AppStrings {
   String get onboardingHeaderSubTitle2 => _localizedStrings['onboardingHeaderSubTitle2']!;
   String get onboardingHeaderTitle3 => _localizedStrings['onboardingHeaderTitle3']!;
   String get onboardingHeaderSubTitle3 => _localizedStrings['onboardingHeaderSubTitle3']!;
-
+  String get onboardingHeaderTitle4 => _localizedStrings['onboardingHeaderTitle4']!;
+  String get onboardingHeaderSubTitle4 => _localizedStrings['onboardingHeaderSubTitle4']!;
 
 
 
