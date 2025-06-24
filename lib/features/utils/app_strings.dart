@@ -14,6 +14,12 @@ class AppStrings {
         // strings for onboarding pages
         'onboardingHeaderTitle1': 'Take Charge of Your Cycle',
         'onboardingHeaderSubTitle1': 'Track your period, log symptoms, and learn \nabout your body—all in one safe, supportive \nspace',
+        'onboardingHeaderTitle2': 'Know What to Expect',
+        'onboardingHeaderSubTitle2': 'Log how you feel daily--track your mood, cramps, \ncravings, and more.',
+        'onboardingHeaderTitle3': 'You’re Not Alone',
+        'onboardingHeaderSubTitle3': 'Get trusted answers, connect with others, and \nlearn at your pace',
+        'onboardingHeaderTitle4': 'Join a community that cares',
+        'onboardingHeaderSubTitle4': 'Trust us to keep you informed, and \nconnected all at once',
 
 
 
@@ -66,8 +72,12 @@ class AppStrings {
   // for onboarding pages
   String get onboardingHeaderTitle1 => _localizedStrings['onboardingHeaderTitle1']!;
   String get onboardingHeaderSubTitle1 => _localizedStrings['onboardingHeaderSubTitle1']!;
-
-
+  String get onboardingHeaderTitle2 => _localizedStrings['onboardingHeaderTitle2']!;
+  String get onboardingHeaderSubTitle2 => _localizedStrings['onboardingHeaderSubTitle2']!;
+  String get onboardingHeaderTitle3 => _localizedStrings['onboardingHeaderTitle3']!;
+  String get onboardingHeaderSubTitle3 => _localizedStrings['onboardingHeaderSubTitle3']!;
+  String get onboardingHeaderTitle4 => _localizedStrings['onboardingHeaderTitle4']!;
+  String get onboardingHeaderSubTitle4 => _localizedStrings['onboardingHeaderSubTitle4']!;
 
 
 

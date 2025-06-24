@@ -1,98 +1,78 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flow_savvy/features/account/login/login_screen.dart';
-import 'package:flow_savvy/features/structure/home/screen/home_screen.dart';
+import 'package:provider/provider.dart';
+import '../../services/splash_service.dart';
+import '../../widgets/splash_item.dart';
+
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
-
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  _SplashScreenState createState() => _SplashScreenState();
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  int _currentIndex = 0;
+  late Timer _timer;
+
   @override
   void initState() {
     super.initState();
-    _checkLoginStatus();
+    _startAnimationSequence();
   }
 
-  Future<void> _checkLoginStatus() async {
-    final prefs = await SharedPreferences.getInstance();
-    final remember = prefs.getBool('rememberMe') ?? false;
+  void _startAnimationSequence() {
+    _timer = Timer.periodic(const Duration(seconds: 2), (timer) {
+      if (_currentIndex < 4) {
+        setState(() {
+          _currentIndex++;
+        });
+      } else {
+        timer.cancel();
+        _decideNext();
+      }
+    });
+  }
 
-    // Optional delay so the splash screen shows briefly
-    await Future.delayed(const Duration(seconds: 2));
+  Future<void> _decideNext() async {
+    final splashService = context.read<SplashService>();
 
-    if (remember) {
-      Navigator.pushNamed(context, '/home');
+    final isFirstTime = await splashService.isFirstLaunch();
+    if (isFirstTime) {
+      Navigator.pushReplacementNamed(context, '/onboarding');
     } else {
-      Navigator.pushNamed(context, '/login');
+      final route = await splashService.getNextRoute();
+      Navigator.pushReplacementNamed(context, route);
     }
   }
 
   @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final screens = [
+      SplashItem(image: 'assets/images/splash_screen/splash1.png'),
+      SplashItem(image: 'assets/images/splash_screen/splash2.png'),
+      SplashItem(image: 'assets/images/splash_screen/splash3.png'),
+      SplashItem(image: 'assets/images/splash_screen/splash4.png'),
+      SplashItem(image: 'assets/images/splash_screen/splash5.png'),
+    ];
+
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Container(
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage("assets/images/images2.png"),
-              fit: BoxFit.cover,
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.only(left: 12.0, right: 12, top: 100, bottom: 100),
-            child: Column(
-              children: [
-                Image.asset(
-                  "assets/images/logo.png",
-                  width: MediaQuery.sizeOf(context).width * 0.8,
-                ),
-                SizedBox(height: MediaQuery.of(context).size.height * 0.04),
-                const Text(
-                  "Your companion for holistic menstrual health — understand and predict your cycle and ovulation, track symptoms, monitor mood and pain levels, log medications and remedies, and receive personalized motivation to navigate your cycle with clarity and confidence.",
-                  style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic, color: Colors.white),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: MediaQuery.of(context).size.height * 0.04),
-                const Text(
-                  "Be period-smart — understand, predict, track, and thrive with FlowSavvy!",
-                  style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: MediaQuery.of(context).size.height * 0.06),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const LoginScreen()),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green.shade400,
-                      foregroundColor: Colors.white,
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text(
-                          "Get Started ✌️",
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(width: MediaQuery.of(context).size.width * 0.02),
-                        const Icon(Icons.arrow_forward)
-                      ],
-                    ),
-                  ),
-                )
-              ],
-            ),
-          ),
-        ),
+      backgroundColor: Theme.of(context).colorScheme.primary,
+      body: Stack(
+        children: List.generate(screens.length, (index) {
+          return AnimatedOpacity(
+            opacity: _currentIndex == index ? 1.0 : 0.0,
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeInOut,
+            child: screens[index],
+          );
+        }),
       ),
     );
   }

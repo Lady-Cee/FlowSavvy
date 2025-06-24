@@ -10,6 +10,7 @@ import 'package:flow_savvy/features/structure/gemini/gemini_search_screen.dart';
 import 'package:flow_savvy/features/structure/home/screen/home_screen.dart';
 import 'package:flow_savvy/features/structure/home/screen/test_screen.dart';
 import 'package:flow_savvy/features/structure/menopause/menopause_screen.dart';
+import 'package:flow_savvy/features/structure/onboarding/onboarding_screens.dart';
 import 'package:flow_savvy/features/structure/period/screen/period_log_screen.dart';
 import 'package:flow_savvy/features/structure/support/screen/community_support_screen.dart';
 import 'package:flow_savvy/features/structure/symptom/screen/symptom_log_screen.dart';
@@ -31,6 +32,7 @@ import 'features/providers/mental_health_provider.dart';
 import 'features/providers/symptom_log_provider.dart';
 import 'features/providers/user_profile_provider.dart';
 import 'features/services/firebase_auth_services.dart';
+import 'features/services/splash_service.dart';
 import 'features/structure/product/screen/product_screen.dart';
 import 'features/structure/splash/splash_screen.dart';
 import 'features/structure/support/screen/community_admin_screen.dart';
@@ -79,6 +81,7 @@ class MyApp extends StatelessWidget {
         Provider<FireBaseAuthService>(create: (_) => FireBaseAuthService(),),
         ChangeNotifierProvider<AuthProvider>( create: (context) => AuthProvider(context.read<FireBaseAuthService>()),),
         Provider<AppTheme>(create:(_) => AppTheme() ),
+        Provider<SplashService>(create: (_) => SplashService()),
        // ChangeNotifierProvider(create: (_) => EducationalResourceProvider()),
 
     ],
@@ -106,11 +109,12 @@ class MyApp extends StatelessWidget {
           // If not supported, fallback to English
           return const Locale('en');
         },
-        // home: SplashScreen(),
-        home: TestScreen(),
+        home: SplashScreen(),
+        // home: TestScreen(),
         routes: {
           '/test': (_) => TestScreen(),
           '/home': (_) => HomeScreen(),
+          '/onboarding': (_) => OnboardingScreen(),
           '/periodLog': (_) => PeriodLogScreen(),
           '/symptomLog': (_) => SymptomLogScreen(),
           '/educational': (_) => EducationalResourceScreen(),
