@@ -87,6 +87,8 @@ flutter:
   assets:
    - assets/
    - assets/images/
+   - assets/images/splash_screen/
+   - assets/images/onboarding/
    - .env
    - assets/icons/
    - assets/fonts/
