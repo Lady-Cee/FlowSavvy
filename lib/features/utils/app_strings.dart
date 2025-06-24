@@ -19,7 +19,7 @@ class AppStrings {
         'onboardingHeaderTitle3': 'You’re Not Alone',
         'onboardingHeaderSubTitle3': 'Get trusted answers, connect with others, and \nlearn at your pace',
         'onboardingHeaderTitle4': 'Join a community that cares',
-        'onboardingHeaderSubTitle4': 'Trust us to keep you informed, and \nconnected all at once',
+        'onboardingHeaderSubTitle4': 'Trust us to keep you informed, and \nconnected all at once.',
 
 
 
