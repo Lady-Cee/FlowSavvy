@@ -30,7 +30,8 @@ class AppTextStyles {
       fontWeight: FontWeight.w600,
       fontSize: 16,
       height: 1.4,
-      color: theme.colorScheme.surface,
+      //color: theme.colorScheme.surface,
+      color: theme.colorScheme.inversePrimary,
     );
   }
 
