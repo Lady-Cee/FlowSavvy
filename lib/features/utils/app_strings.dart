@@ -22,6 +22,9 @@ class AppStrings {
         'onboardingHeaderSubTitle4': 'Trust us to keep you informed, and \nconnected all at once.',
 
 
+        // for login and sign up
+        'loginHeaderText': 'Welcome Back',
+        'loginSubtitleText': 'Log in to continue your journey',
 
         // for sample UI
 
@@ -78,6 +81,11 @@ class AppStrings {
   String get onboardingHeaderSubTitle3 => _localizedStrings['onboardingHeaderSubTitle3']!;
   String get onboardingHeaderTitle4 => _localizedStrings['onboardingHeaderTitle4']!;
   String get onboardingHeaderSubTitle4 => _localizedStrings['onboardingHeaderSubTitle4']!;
+
+
+  // for login and sign up
+  String get loginHeaderText => _localizedStrings['loginHeaderText']!;
+  String get loginSubtitleText => _localizedStrings['loginSubtitleText']!;
 
 
 

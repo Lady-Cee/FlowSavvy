@@ -21,12 +21,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     if (message == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Password reset email sent to $email!")),
+        SnackBar(content: Text("Password reset email sent to $email!"), backgroundColor: Theme.of(context).colorScheme.primary,),
       );
       emailController.clear();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
+        SnackBar(content: Text(message),  backgroundColor: Theme.of(context).colorScheme.primary,),
       );
     }
 
@@ -35,7 +35,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Reset Password")),
+      appBar: AppBar(title: Text("Reset Password"),
+        automaticallyImplyLeading: false,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(

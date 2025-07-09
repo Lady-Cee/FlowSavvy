@@ -41,8 +41,7 @@ class _SplashScreenState extends State<SplashScreen> {
     if (isFirstTime) {
       Navigator.pushReplacementNamed(context, '/onboarding');
     } else {
-      final route = await splashService.getNextRoute();
-      Navigator.pushReplacementNamed(context, route);
+      Navigator.pushReplacementNamed(context, '/login');
     }
   }
 
