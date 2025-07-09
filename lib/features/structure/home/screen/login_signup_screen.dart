@@ -23,64 +23,12 @@ class LoginSignUpScreen extends StatefulWidget {
 
 class _LoginSignUpScreenState extends State<LoginSignUpScreen> {
   bool isLogin = true;
-  //
-  // // Login controllers
-  // final TextEditingController _loginEmailController = TextEditingController();
-  // final TextEditingController _loginPasswordController = TextEditingController();
 
   // Signup controllers
   final TextEditingController _signupNameController = TextEditingController();
   final TextEditingController _signupEmailController = TextEditingController();
   final TextEditingController _signupPasswordController = TextEditingController();
   final TextEditingController _signupConfirmPasswordController = TextEditingController();
-
-  // Widget _buildSignupForm() {
-  //   return Column(
-  //     crossAxisAlignment: CrossAxisAlignment.stretch,
-  //     children: [
-  //       CustomTextField(
-  //         hintText: 'Enter Full Name',
-  //         controller: _signupNameController,
-  //         isObscure: false,
-  //         isOptionalLeadingIcon: true,
-  //         optionalLeadingIcon: Icons.person,
-  //       ),
-  //       const SizedBox(height: 20),
-  //       CustomTextField(
-  //         hintText: 'Enter Email',
-  //         controller: _signupEmailController,
-  //         isObscure: false,
-  //         isOptionalLeadingIcon: true,
-  //         optionalLeadingIcon: Icons.email,
-  //       ),
-  //       const SizedBox(height: 20),
-  //       CustomTextField(
-  //         hintText: 'Enter Password',
-  //         controller: _signupPasswordController,
-  //         isObscure: true,
-  //         isOptionalLeadingIcon: true,
-  //         optionalLeadingIcon: Icons.lock,
-  //       ),
-  //       const SizedBox(height: 20),
-  //       CustomTextField(
-  //         hintText: 'Confirm Password',
-  //         controller: _signupConfirmPasswordController,
-  //         isObscure: true,
-  //         isOptionalLeadingIcon: true,
-  //         optionalLeadingIcon: Icons.lock,
-  //       ),
-  //       const SizedBox(height: 40),
-  //       LongCustomButton(
-  //         onTap: () {
-  //           // Handle signup
-  //           //Navigator.pushNamed(context, '/profileCompleteScreen');
-  //         },
-  //         title: 'Create Account',
-  //       ),
-  //     ],
-  //   );
-  // }
-
 
 
   @override
@@ -112,12 +60,8 @@ class _LoginSignUpScreenState extends State<LoginSignUpScreen> {
                 ),
 
                 isLogin ? Expanded(child: LoginScreen ()) : Flexible(child: SignupScreen()),
-                // const SizedBox(height: 20),
-                // isLogin ? Text('Login') : Text('SignUp'),
-                SizedBox(height: 25),
 
-                // isLogin ? LoginScreen() : _buildSignupForm(),
-                // const SizedBox(height: 30),
+                SizedBox(height: 25),
               ],
             )),
       ),
