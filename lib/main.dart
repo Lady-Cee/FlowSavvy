@@ -109,8 +109,8 @@ class MyApp extends StatelessWidget {
           // If not supported, fallback to English
           return const Locale('en');
         },
-        // home: SplashScreen(),
-        home: TestScreen(),
+        home: SplashScreen(),
+        // home: TestScreen(),
         routes: {
           '/test': (_) => TestScreen(),
           '/home': (_) => HomeScreen(),
