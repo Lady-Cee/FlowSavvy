@@ -29,6 +29,7 @@ import 'features/providers/community_support_provider.dart';
 import 'features/providers/counsellor_provider.dart';
 import 'features/providers/doctor_provider.dart';
 import 'features/providers/gemini_provider.dart';
+import 'features/providers/is_login_state_provider.dart';
 import 'features/providers/menopause_provider.dart';
 import 'features/providers/mental_health_provider.dart';
 import 'features/providers/symptom_log_provider.dart';
@@ -87,6 +88,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<AuthProvider>( create: (context) => AuthProvider(context.read<FireBaseAuthService>()),),
         Provider<AppTheme>(create:(_) => AppTheme() ),
         Provider<SplashService>(create: (_) => SplashService()),
+        ChangeNotifierProvider(create: (_) => IsLoginStateProvider()),
        // ChangeNotifierProvider(create: (_) => EducationalResourceProvider()),
 
     ],

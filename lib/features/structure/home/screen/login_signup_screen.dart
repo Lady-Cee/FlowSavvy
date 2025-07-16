@@ -7,9 +7,11 @@ import 'package:flow_savvy/features/widgets/login_header.dart';
 import 'package:flow_savvy/features/widgets/long_custom_button.dart';
 import 'package:flow_savvy/features/widgets/signup_header.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../../account/login/login_screen.dart';
 import '../../../account/signup/signup_screen.dart';
+import '../../../providers/is_login_state_provider.dart';
 import '../../../widgets/login_sign_up_switch.dart';
 
 //import '../../../widgets/login_sign_up_switch.dart';
@@ -22,11 +24,12 @@ class LoginSignUpScreen extends StatefulWidget {
 }
 
 class _LoginSignUpScreenState extends State<LoginSignUpScreen> {
-  bool isLogin = true;
+  // bool isLogin = true;
 
 
   @override
   Widget build(BuildContext context) {
+    final isLogin = context.watch<IsLoginStateProvider>().isLogin;
 
     return Scaffold(
       body: Padding(
@@ -42,9 +45,7 @@ class _LoginSignUpScreenState extends State<LoginSignUpScreen> {
                 LoginSignupSwitch(
                   isLoginSelected: isLogin,
                   onToggle: (value) {
-                    setState(() {
-                      isLogin = value;
-                    });
+                    context.read<IsLoginStateProvider>().toggle();
                   },
                 ),
 

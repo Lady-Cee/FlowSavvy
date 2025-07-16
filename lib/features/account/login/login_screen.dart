@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/is_login_state_provider.dart';
 import '../../utils/app_text_styles.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/long_custom_button.dart';
@@ -198,7 +199,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     SizedBox(width: 20),
                     GestureDetector(
                       onTap: () {
-                        Navigator.pushNamed(context, '/signup');
+                        Provider.of<IsLoginStateProvider>(context, listen: false).setSignup();
                       },
                       child: Text(
                         "Sign Up",

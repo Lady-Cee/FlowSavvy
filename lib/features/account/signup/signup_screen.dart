@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/auth_provider.dart';
+import '../../providers/is_login_state_provider.dart';
 import '../../services/firebase_auth_services.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/long_custom_button.dart';
@@ -47,14 +48,14 @@ class _SignupScreenState extends State<SignupScreen> {
 
     if (firstName.isEmpty || surname.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Please fill all fields")),
+        SnackBar(content: Text("Please fill all fields", style: TextStyle(color: Colors.red),)),
       );
       return;
     }
 
     if (password != confirmPassword) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Passwords do not match")),
+        SnackBar(content: Text("Passwords do not match", style: TextStyle(color: Colors.red),)),
       );
       return;
     }
@@ -64,12 +65,15 @@ class _SignupScreenState extends State<SignupScreen> {
 
     if (result == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Signup successful! Please log in.")),
+        SnackBar(
+          content: Text("Signup successful! Please log in."),
+          backgroundColor: Theme.of(context).colorScheme.primary,
+        ),
       );
-      Navigator.pushNamed(context, '/loginSignUpScreen');
+      Provider.of<IsLoginStateProvider>(context, listen: false).setLogin();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result)),
+        SnackBar(content: Text(result, style: TextStyle(color: Colors.red),)),
       );
     }
   }
@@ -137,6 +141,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     GestureDetector(
                       onTap: () {
                        // Navigator.pushNamed(context, '/loginSignUpScreen');
+                        Provider.of<IsLoginStateProvider>(context, listen: false).setLogin();
                       },
                       child: Text(
                         "Login",
