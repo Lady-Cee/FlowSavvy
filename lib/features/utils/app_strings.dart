@@ -20,8 +20,17 @@ class AppStrings {
         'onboardingHeaderSubTitle3': 'Get trusted answers, connect with others, and \nlearn at your pace',
         'onboardingHeaderTitle4': 'Join a community that cares',
         'onboardingHeaderSubTitle4': 'Trust us to keep you informed, and \nconnected all at once.',
+        'loginHeaderText': 'welcome Back.',
+        'loginSubtitleText': 'Log in to continue your journey.',
+        'signupHeaderText': 'Create an Account.',
+        'signupSubtitleText': 'Join the PeriodReal community.',
 
 
+
+
+        // for login and sign up
+        // 'loginHeaderText': 'Welcome Back',
+        // 'loginSubtitleText': 'Log in to continue your journey',
 
         // for sample UI
 
@@ -78,6 +87,15 @@ class AppStrings {
   String get onboardingHeaderSubTitle3 => _localizedStrings['onboardingHeaderSubTitle3']!;
   String get onboardingHeaderTitle4 => _localizedStrings['onboardingHeaderTitle4']!;
   String get onboardingHeaderSubTitle4 => _localizedStrings['onboardingHeaderSubTitle4']!;
+  String get loginHeaderText => _localizedStrings['loginHeaderText']!;
+  String get loginSubtitleText => _localizedStrings['loginSubtitleText']!;
+  String get signupHeaderText => _localizedStrings['signupHeaderText']!;
+  String get signupSubtitleText => _localizedStrings['signupSubtitleText']!;
+
+
+  // for login and sign up
+  // String get loginHeaderText => _localizedStrings['loginHeaderText']!;
+  // String get loginSubtitleText => _localizedStrings['loginSubtitleText']!;
 
 
 

@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/auth_provider.dart';
+import '../../providers/is_login_state_provider.dart';
 import '../../services/firebase_auth_services.dart';
+import '../../widgets/custom_text_field.dart';
+import '../../widgets/long_custom_button.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -45,14 +48,14 @@ class _SignupScreenState extends State<SignupScreen> {
 
     if (firstName.isEmpty || surname.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Please fill all fields")),
+        SnackBar(content: Text("Please fill all fields", style: TextStyle(color: Colors.red),)),
       );
       return;
     }
 
     if (password != confirmPassword) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Passwords do not match")),
+        SnackBar(content: Text("Passwords do not match", style: TextStyle(color: Colors.red),)),
       );
       return;
     }
@@ -62,12 +65,15 @@ class _SignupScreenState extends State<SignupScreen> {
 
     if (result == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Signup successful! Please log in.")),
+        SnackBar(
+          content: Text("Signup successful! Please log in."),
+          backgroundColor: Theme.of(context).colorScheme.primary,
+        ),
       );
-      Navigator.pushNamed(context, '/login');
+      Provider.of<IsLoginStateProvider>(context, listen: false).setLogin();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result)),
+        SnackBar(content: Text(result, style: TextStyle(color: Colors.red),)),
       );
     }
   }
@@ -75,86 +81,80 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Sign Up")),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: ListView(
-          children: [
-            TextField(
-              controller: firstNameController,
-              decoration: InputDecoration(
-                labelText: "First Name",
-                prefixIcon: Icon(Icons.person), // Email icon added here
-              ),
-            ),
-            SizedBox(height: 10),
-            TextField(
-              controller: surnameController,
-              decoration: InputDecoration(
-                labelText: "Surname",
-                prefixIcon: Icon(Icons.person_add), // Email icon added here
-              ),
-            ),
-            SizedBox(height: 10),
-            TextField(
-              controller: emailController,
-              decoration: InputDecoration(
-                labelText: "Email",
-                prefixIcon: Icon(Icons.email), // Email icon added here
-              ),
-            ),
-            SizedBox(height: 10),
-            TextField(
-              controller: passwordController,
-              obscureText: _obscureText,
-              decoration: InputDecoration(
-                labelText: "Password",
-                prefixIcon: Icon(Icons.lock),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscureText ? Icons.visibility_off : Icons.visibility,
-                  ),
-                  onPressed: _toggleVisibility,
-                ),
-              ),
-            ),
-            SizedBox(height: 10),
-            TextField(
-              controller: confirmPasswordController,
-              obscureText: _obscureText1,
-              decoration: InputDecoration(
-                labelText: "Confirm Password",
-                prefixIcon: Icon(Icons.lock),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscureText1 ? Icons.visibility_off : Icons.visibility,
-                  ),
-                  onPressed: _toggleVisibility1,
-                ),
-              ),
-            ),
-            SizedBox(height: 20),
-        ElevatedButton(
-          onPressed: () => signUpUser() ,
-          child: Text("Sign Up"),
-        ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+    //  appBar: AppBar(title: Text("Sign Up")),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: ListView(
               children: [
-                Text("Already have an account? "),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pushNamed(context, '/login');
-                  },
-                  child: Text(
-                    "Login",
-                    style: TextStyle(color: Colors.blue),
-                  ),
+                CustomTextField(
+                  hintText: 'Enter First Name',
+                  controller: firstNameController,
+                  isObscure: false,
+                  isOptionalLeadingIcon: true,
+                  optionalLeadingIcon: Icons.person,
+                ),
+                SizedBox(height: 20),
+                CustomTextField(
+                  hintText: 'Enter Surname',
+                  controller: surnameController,
+                  isObscure: false,
+                  isOptionalLeadingIcon: true,
+                  optionalLeadingIcon: Icons.person,
+                ),
+                SizedBox(height: 20),
+                CustomTextField(
+                  hintText: 'Enter Email',
+                  controller: emailController,
+                  isObscure: false,
+                  isOptionalLeadingIcon: true,
+                  optionalLeadingIcon: Icons.email,
+                ),
+                SizedBox(height: 20),
+                CustomTextField(
+                  hintText: 'Enter Password',
+                  controller: passwordController,
+                  isObscure: true,
+                  isOptionalLeadingIcon: true,
+                  optionalLeadingIcon: Icons.lock,
+
+                ),
+                SizedBox(height: 20),
+                CustomTextField(
+                  hintText: 'Confirm Password',
+                  controller: confirmPasswordController,
+                  isObscure: true,
+                  isOptionalLeadingIcon: true,
+                  optionalLeadingIcon: Icons.lock,
+                ),
+                SizedBox(height: 40),
+                LongCustomButton(
+                  onTap: () => signUpUser() ,
+                  title: "Sign Up",
+                ),
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text("Already have an account? "),
+                    GestureDetector(
+                      onTap: () {
+                       // Navigator.pushNamed(context, '/loginSignUpScreen');
+                        Provider.of<IsLoginStateProvider>(context, listen: false).setLogin();
+                      },
+                      child: Text(
+                        "Login",
+                        style: TextStyle(color: Colors.blue),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
+          );
+
+        }
       ),
     );
   }

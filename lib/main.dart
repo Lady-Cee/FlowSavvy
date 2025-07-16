@@ -5,6 +5,7 @@ import 'package:flow_savvy/features/account/password/forgot_password_screen.dart
 import 'package:flow_savvy/features/account/signup/signup_screen.dart';
 import 'package:flow_savvy/features/providers/period_log_provider.dart';
 import 'package:flow_savvy/features/providers/product_provider.dart';
+import 'package:flow_savvy/features/providers/profile_complete_provider.dart';
 import 'package:flow_savvy/features/structure/educational/screen/educational_resource_screen.dart';
 import 'package:flow_savvy/features/structure/gemini/gemini_search_screen.dart';
 import 'package:flow_savvy/features/structure/home/screen/home_screen.dart';
@@ -21,18 +22,21 @@ import 'package:flutter/material.dart';import 'package:flutter_dotenv/flutter_do
 import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:provider/provider.dart';
 
+import 'features/models/profile_complete_model.dart';
 import 'features/providers/auth_provider.dart';
 import 'features/providers/community_admin_provider.dart';
 import 'features/providers/community_support_provider.dart';
 import 'features/providers/counsellor_provider.dart';
 import 'features/providers/doctor_provider.dart';
 import 'features/providers/gemini_provider.dart';
+import 'features/providers/is_login_state_provider.dart';
 import 'features/providers/menopause_provider.dart';
 import 'features/providers/mental_health_provider.dart';
 import 'features/providers/symptom_log_provider.dart';
 import 'features/providers/user_profile_provider.dart';
 import 'features/services/firebase_auth_services.dart';
 import 'features/services/splash_service.dart';
+import 'features/structure/home/screen/profile_complete_screen.dart';
 import 'features/structure/product/screen/product_screen.dart';
 import 'features/structure/splash/splash_screen.dart';
 import 'features/structure/support/screen/community_admin_screen.dart';
@@ -41,6 +45,7 @@ import 'features/structure/support/screen/doctor_screen.dart';
 import 'features/structure/support/screen/mental_health_professional_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'features/utils/app_strings.dart';
+import 'features/structure/home/screen/login_signup_screen.dart';
 import 'firebase_options.dart';
 // import 'package:provider/provider.dart';
 // import 'features/providers/educational_resource_provider.dart';
@@ -77,17 +82,22 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CounsellorProvider()),
         ChangeNotifierProvider(create: (_) => DoctorProvider()),
         ChangeNotifierProvider(create: (_) => MentalHealthProvider()),
+        ChangeNotifierProvider(create: (_) => ProfileCompleteProvider()),
         ChangeNotifierProvider(create: (_) => MenopauseProvider()),
         Provider<FireBaseAuthService>(create: (_) => FireBaseAuthService(),),
         ChangeNotifierProvider<AuthProvider>( create: (context) => AuthProvider(context.read<FireBaseAuthService>()),),
         Provider<AppTheme>(create:(_) => AppTheme() ),
         Provider<SplashService>(create: (_) => SplashService()),
+        ChangeNotifierProvider(create: (_) => IsLoginStateProvider()),
        // ChangeNotifierProvider(create: (_) => EducationalResourceProvider()),
 
     ],
       child: MaterialApp(
         title: 'Menstrual Health Tracker',
         theme: AppTheme().lightMode,
+        // theme: AppTheme().lightMode,
+        // darkTheme: AppTheme().darkMode,
+        // themeMode: ThemeMode.system, // Automatically switch based on system preference
           debugShowCheckedModeBanner: false,
         locale: Locale('en'),
         supportedLocales: const [
@@ -109,8 +119,9 @@ class MyApp extends StatelessWidget {
           // If not supported, fallback to English
           return const Locale('en');
         },
-        home: SplashScreen(),
+       // home: SplashScreen(),
         // home: TestScreen(),
+        home: LoginSignUpScreen(),
         routes: {
           '/test': (_) => TestScreen(),
           '/home': (_) => HomeScreen(),
@@ -130,6 +141,8 @@ class MyApp extends StatelessWidget {
           '/signup' : (_) => SignupScreen(),
           '/forgotPassword' : (_) => ForgotPasswordScreen(),
           '/menopause' : (_) => MenopauseScreen(),
+          '/profileCompleteScreen' : (_) => ProfileCompleteScreen(),
+          'loginSignUpScreen' : (_) => LoginSignUpScreen(),
 
         },
       ),

@@ -29,6 +29,7 @@ class HomeScreen extends StatelessWidget {
     final profile = Provider.of<UserProfileProvider>(context).userProfile;
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text('Flow Savvy Dashboard'),
         actions: [
           PopupMenuButton<int>(
