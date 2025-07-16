@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import '../utils/app_strings.dart';
 import 'custom_header.dart';
 
-class LoginHeader extends StatelessWidget {
-  const LoginHeader({super.key});
+class SignupHeader extends StatelessWidget {
+  const SignupHeader({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -16,10 +16,10 @@ class LoginHeader extends StatelessWidget {
           ClipRect(
             child: Align(
               alignment: Alignment.topCenter,
-              heightFactor: 0.5, // Show top half only
+              heightFactor: 0.5,
               child: Image.asset(
-                "assets/images/onboarding/onboarding6.png",
-                height: 250, // set fixed height
+                "assets/images/onboarding/onboarding5.png",
+                height: 250,
                 width: double.infinity,
                 fit: BoxFit.cover,
               ),
@@ -27,8 +27,8 @@ class LoginHeader extends StatelessWidget {
           ),
           SizedBox(height: 25),
           CustomHeader(
-            title: appStrings.loginHeaderText,
-            subTitle: appStrings.loginSubtitleText,
+            title: appStrings.signupHeaderText,
+            subTitle: appStrings.signupSubtitleText,
           ),
           SizedBox(height: 25),
         ],
@@ -36,3 +36,4 @@ class LoginHeader extends StatelessWidget {
     );
   }
 }
+
