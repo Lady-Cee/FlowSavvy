@@ -24,16 +24,9 @@ class LoginSignUpScreen extends StatefulWidget {
 class _LoginSignUpScreenState extends State<LoginSignUpScreen> {
   bool isLogin = true;
 
-  // Signup controllers
-  final TextEditingController _signupNameController = TextEditingController();
-  final TextEditingController _signupEmailController = TextEditingController();
-  final TextEditingController _signupPasswordController = TextEditingController();
-  final TextEditingController _signupConfirmPasswordController = TextEditingController();
-
 
   @override
   Widget build(BuildContext context) {
-    final AppStrings appStrings = AppStrings();
 
     return Scaffold(
       body: Padding(
@@ -46,10 +39,6 @@ class _LoginSignUpScreenState extends State<LoginSignUpScreen> {
                   height: 10,
                 ),
 
-        // LongCustomButton(onTap: () {}, title: 'Button'),
-                // SizedBox(
-                //   height: 10,
-                // ),
                 LoginSignupSwitch(
                   isLoginSelected: isLogin,
                   onToggle: (value) {
