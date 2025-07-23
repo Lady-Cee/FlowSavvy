@@ -9,10 +9,10 @@ import 'package:flow_savvy/features/widgets/signup_header.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../account/login/login_screen.dart';
-import '../../../account/signup/signup_screen.dart';
-import '../../../providers/is_login_state_provider.dart';
-import '../../../widgets/login_sign_up_switch.dart';
+import 'login_screen.dart';
+import '../signup/signup_screen.dart';
+import '../../providers/is_login_state_provider.dart';
+import '../../widgets/login_sign_up_switch.dart';
 
 //import '../../../widgets/login_sign_up_switch.dart';
 

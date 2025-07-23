@@ -7,6 +7,10 @@ class AppStrings {
   static Future<void> load(Locale locale) async {
     final translations = {
       'en': {
+        // core strings
+
+
+
         // Home
         'defaultText': 'Please complete your profile to get predictions.',
 
@@ -26,6 +30,19 @@ class AppStrings {
         'signupSubtitleText': 'Join the PeriodReal community.',
 
 
+
+
+        // strings for profile page
+        'completeYourProfileText': 'Complete Your Profile',
+        'completeProfileSubTitleText': 'Tell us more about you so we can personalise your experience',
+        'completeProfileNameText': 'Name',
+        'completeProfileAgeText': 'Age',
+        'completeProfileAverageCycleText': 'Average Cycle Length (days)',
+        'completeProfileLastPeriodText': 'Last Period Start Date',
+        'completeProfileNextPeriodIsText': 'Your next period is expected on: ',
+        'completeProfileEstimatedOvulationText': 'Estimated ovulation day: ',
+        'saveProfileBtnText': 'Save Profile',
+        'completeProfileWeValueText': 'We value your privacy. Your information stay secure with us',
 
 
         // for login and sign up
@@ -91,6 +108,19 @@ class AppStrings {
   String get loginSubtitleText => _localizedStrings['loginSubtitleText']!;
   String get signupHeaderText => _localizedStrings['signupHeaderText']!;
   String get signupSubtitleText => _localizedStrings['signupSubtitleText']!;
+
+
+  // for profile screen
+  String get completeYourProfileText => _localizedStrings['completeYourProfileText']!;
+  String get completeProfileSubTitleText => _localizedStrings['completeProfileSubTitleText']!;
+  String get completeProfileNameText => _localizedStrings['completeProfileNameText']!;
+  String get completeProfileAgeText => _localizedStrings['completeProfileAgeText']!;
+  String get completeProfileAverageCycleText => _localizedStrings['completeProfileAverageCycleText']!;
+  String get completeProfileLastPeriodText => _localizedStrings['completeProfileLastPeriodText']!;
+  String get completeProfileNextPeriodIsText => _localizedStrings['completeProfileNextPeriodIsText']!;
+  String get completeProfileEstimatedOvulationText => _localizedStrings['completeProfileEstimatedOvulationText']!;
+  String get saveProfileBtnText => _localizedStrings['saveProfileBtnText']!;
+  String get completeProfileWeValueText => _localizedStrings['completeProfileWeValueText']!;
 
 
   // for login and sign up
