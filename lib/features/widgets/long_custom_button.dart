@@ -8,6 +8,7 @@ class LongCustomButton extends StatelessWidget {
   const LongCustomButton({super.key, required this.onTap, required this.title});
   @override
   Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -16,10 +17,10 @@ class LongCustomButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
         // margin: const EdgeInsets.symmetric(horizontal: 25),
         decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary,
+            color: color.primary,
             borderRadius: BorderRadius.circular(8)
         ),
-        child:  Text(title, style: AppTextStyles.smallTextSemiBold(context),textAlign: TextAlign.center,))
+        child:  Text(title, style: AppTextStyles.smallTextSemiBold(context).copyWith(color: color.surface),textAlign: TextAlign.center,))
     );
   }
 }

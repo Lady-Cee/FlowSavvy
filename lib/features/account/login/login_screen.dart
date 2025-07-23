@@ -56,7 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final remember = prefs.getBool('rememberMe') ?? false;
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     if (remember && authProvider.currentUser != null) {
-      Navigator.pushReplacementNamed(context, '/profileCompleteScreen');
+      Navigator.pushReplacementNamed(context, '/home');
     }
   }
 
@@ -113,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
       } else {
         await prefs.remove('rememberedEmail');
       }
-      Navigator.pushReplacementNamed(context, '/profileCompleteScreen');
+      Navigator.pushReplacementNamed(context, '/home');
     } else {
       _showMessage(error);
     }

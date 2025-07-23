@@ -10,6 +10,11 @@ class CustomTextField extends StatefulWidget {
   final bool isObscure;
   final bool isOptionalLeadingIcon;
   final FormFieldValidator<String>? validator;
+  final TextInputType? inputType;
+  final bool? readOnly;
+  final Function()? onTap;
+
+
 
   const CustomTextField(
       {super.key,
@@ -20,7 +25,10 @@ class CustomTextField extends StatefulWidget {
         required this.isOptionalLeadingIcon,
         this.onChanged,
       this.isObscure = false,
-      this.validator
+      this.validator,
+        this.inputType,
+        this.readOnly,
+        this.onTap,
       });
 
   @override
@@ -73,6 +81,9 @@ class _CustomTextFieldState extends State<CustomTextField> {
         ),
         obscureText: widget.isObscure && !isPasswordVisible,
         onChanged: widget.onChanged,
+        keyboardType: widget.inputType,
+        readOnly: widget.readOnly ?? false,
+        onTap: widget.onTap,
       ),
     );
   }
