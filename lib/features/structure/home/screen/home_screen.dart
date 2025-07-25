@@ -127,12 +127,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   : null;
 
               final borderColor = (daysUntilNextPeriod != null && daysUntilNextPeriod <= 2 && daysUntilNextPeriod >= 0)
-                  ? color.primary
+                  ? Colors.pink.shade100
                   : Colors.grey.shade400;
 
               final progress = (today.difference(lastPeriodDate).inDays / cycleLength).clamp(0.0, 1.0);
 
-              double ringSize = math.min(constraints.maxWidth * 0.5, 300.0);
+              double ringSize = math.min(constraints.maxWidth * 0.75, 300.0);
               double innerRingSize = ringSize * 0.88;
 
               return SingleChildScrollView(
@@ -159,7 +159,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
                     Center(
                       child: SizedBox(
                         width: ringSize,
@@ -243,7 +243,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       ),
                     ),
                     const SizedBox(height: 10),
-                    Center(child: Text(appStrings.homeStayHydratedText, style: TextStyle(color: Colors.grey[700]))),
+                    Center(child: Text(appStrings.homeStayHydratedText, style: TextStyle(color: Colors.grey[700]), textAlign: TextAlign.center,)),
                     const SizedBox(height: 30),
                   ],
                 ),
