@@ -146,7 +146,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       child: ListTile(
                         title: Text(_getCycleDayText(lastPeriodDate, cycleLength), style: AppTextStyles.smallTextRegular(context)),
-                        trailing: Row(
+                        subtitle: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(Icons.favorite, color: color.primary, size: 16),
@@ -243,8 +243,17 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       ),
                     ),
                     const SizedBox(height: 10),
+
+                    if (profile.age >= 40)
+                      _buildFeatureCard(
+                        context,
+                        title: 'Menopause Tips',
+                        icon: Icons.female,
+                        routeName: '/menopause',
+                      ),
+                    const SizedBox(height: 10),
                     Center(child: Text(appStrings.homeStayHydratedText, style: TextStyle(color: Colors.grey[700]), textAlign: TextAlign.center,)),
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 10),
                   ],
                 ),
               );
@@ -272,6 +281,27 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   String _getCycleDayText(DateTime lastPeriod, int cycleLen) {
     final dayOfCycle = DateTime.now().difference(lastPeriod).inDays + 1;
     return 'Day $dayOfCycle of $cycleLen-day cycle';
+  }
+
+  Widget _buildFeatureCard(BuildContext context,
+      {required String title, required IconData icon, required String routeName}) {
+    return GestureDetector(
+      onTap: () => Navigator.pushNamed(context, routeName),
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            children: [
+              Icon(icon, size: 30, color: Theme.of(context).colorScheme.primary),
+              SizedBox(width: 10),
+              Text(title, style: AppTextStyles.mediumTextSemiBold(context) ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
