@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../../models/symptom_log.dart';
 import '../../../providers/symptom_log_provider.dart';
+import '../../../widgets/long_custom_button.dart';
 
 class SymptomLogScreen extends StatefulWidget {
   @override
@@ -17,6 +18,15 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
   int _painLevel = 0;
   List<String> _suggestedRemedies = [];
   //List<String> _suggestedMedications = [];
+
+
+  final Map<String, String> moodEmojis = {
+    'Happy': '😊',
+    'Sad': '😢',
+    'Anxious': '😰',
+    'Irritable': '😠',
+    'Calm': '😌',
+  };
 
   final Map<String, List<String>> _remedySuggestions = {
     'Cramps': ['Hot water bottle', 'Gentle yoga', 'Chamomile tea', 'Warm bath', 'Stretching'],
@@ -152,7 +162,7 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Select Date:'),
-              SizedBox(height: 5),
+              SizedBox(height: 10),
               GestureDetector(
                 onTap: () async {
                   final pickedDate = await showDatePicker(
@@ -169,16 +179,40 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
                 },
                 child: InputDecorator(
                   decoration: InputDecoration(
-                    labelText: DateFormat('yyyy-MM-dd').format(_selectedDate),
+                   // labelText: DateFormat('yyyy-MM-dd').format(_selectedDate),
                     border: OutlineInputBorder(),
                   ),
                   child: Text(DateFormat('yyyy-MM-dd').format(_selectedDate)),
                 ),
               ),
+
+
+              SizedBox(height: 20),
+              Text('How are you feeling today?'),
               SizedBox(height: 16),
-              Text('Symptoms:'),
               Wrap(
                 spacing: 8,
+                runSpacing: 12,
+                children: moodEmojis.keys.map((mood) {
+                  return FilterChip(
+                    label: Text('${moodEmojis[mood]} $mood'),
+                    selected: _selectedMood.contains(mood),
+                    onSelected: (val) {
+                      setState(() {
+                        _selectedMood.contains(mood)
+                            ? _selectedMood.remove(mood)
+                            : _selectedMood.add(mood);
+                      });
+                    },
+                  );
+                }).toList(),
+              ),
+              SizedBox(height: 16),
+              Text('Physical Symptoms'),
+              SizedBox(height: 16),
+              Wrap(
+                spacing: 10,
+                runSpacing: 12,
                 children: _remedySuggestions.keys.map((symptom) {
                   final isSelected = _selectedSymptoms.contains(symptom);
                   return FilterChip(
@@ -195,41 +229,44 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
                 }).toList(),
               ),
               SizedBox(height: 16),
-              Text('Mood:'),
-              Wrap(
-                spacing: 8,
-                children: ['Happy', 'Sad', 'Anxious', 'Irritable', 'Calm'].map((mood) {
-                  return FilterChip(
-                    label: Text(mood),
-                    selected: _selectedMood.contains(mood),
-                    onSelected: (val) {
-                      setState(() {
-                        _selectedMood.contains(mood)
-                            ? _selectedMood.remove(mood)
-                            : _selectedMood.add(mood);
-                      });
-                    },
-                  );
-                }).toList(),
-              ),
+
               SizedBox(height: 16),
               Text('Pain Level: $_painLevel'),
-              Slider(
-                value: _painLevel.toDouble(),
-                min: 0,
-                max: 10,
-                divisions: 10,
-                label: '$_painLevel',
-                onChanged: (val) {
-                  setState(() {
-                    _painLevel = val.toInt();
-                  });
-                },
+              SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                  activeTrackColor: Colors.pink,         // filled portion
+                  inactiveTrackColor: Colors.grey[300],  // unfilled portion
+                ),
+                child: Slider(
+                  value: _painLevel.toDouble(),
+                  min: 0,
+                  max: 10,
+                  divisions: 10,
+                  label: '$_painLevel',
+                  onChanged: (val) {
+                    setState(() {
+                      _painLevel = val.toInt();
+                    });
+                  },
+                ),
               ),
+
+              // Slider(
+              //   value: _painLevel.toDouble(),
+              //   min: 0,
+              //   max: 10,
+              //   divisions: 10,
+              //   label: '$_painLevel',
+              //   onChanged: (val) {
+              //     setState(() {
+              //       _painLevel = val.toInt();
+              //     });
+              //   },
+              // ),
               SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _saveLog,
-                child: Text('Save Log'),
+              LongCustomButton(
+                onTap: _saveLog,
+                title: 'Save Log',
               ),
               SizedBox(height: 24),
               if (logs.isNotEmpty)

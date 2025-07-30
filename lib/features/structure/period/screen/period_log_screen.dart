@@ -4,6 +4,9 @@ import 'package:provider/provider.dart';
 
 import '../../../models/period_log.dart';
 import '../../../providers/period_log_provider.dart';
+import '../../../utils/app_text_styles.dart';
+import '../../../widgets/custom_text_field.dart';
+import '../../../widgets/long_custom_button.dart';
 
 class PeriodLogScreen extends StatefulWidget {
   @override
@@ -73,7 +76,7 @@ class _PeriodLogScreenState extends State<PeriodLogScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Log Your Period"),
+        title: Center(child: Text("Log Your Period", style: AppTextStyles.largeTextSemiBold(context))),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -81,61 +84,142 @@ class _PeriodLogScreenState extends State<PeriodLogScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Start Date", style: TextStyle(fontWeight: FontWeight.bold)),
-              ListTile(
-                title: Text(_startDate == null
-                    ? 'Select start date'
-                    : _formatDate(_startDate!)),
-                trailing: Icon(Icons.calendar_today),
+              Text("Start Date", style: AppTextStyles.smallTextSemiBold(context)),
+              // Start Date
+              //Text("Start Date", style: AppTextStyles.smallTextSemiBold(context)),
+              SizedBox(height: 8),
+              GestureDetector(
                 onTap: () => _selectDate(context, true),
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade400),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        _startDate == null ? 'Select start date' : _formatDate(_startDate!),
+                        style: TextStyle(
+                          color: _startDate == null ? Colors.grey : Colors.black,
+                          fontSize: 16,
+                        ),
+                      ),
+                      Icon(Icons.calendar_today, color: Colors.pink),
+                    ],
+                  ),
+                ),
               ),
-              SizedBox(height: 10),
-              Text("End Date", style: TextStyle(fontWeight: FontWeight.bold)),
-              ListTile(
-                title: Text(_endDate == null
-                    ? 'Select end date'
-                    : _formatDate(_endDate!)),
-                trailing: Icon(Icons.calendar_today),
+              SizedBox(height: 20),
+
+// End Date
+              Text("End Date", style: AppTextStyles.smallTextSemiBold(context)),
+              SizedBox(height: 8),
+              GestureDetector(
                 onTap: () => _selectDate(context, false),
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade400),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        _endDate == null ? 'Select end date' : _formatDate(_endDate!),
+                        style: TextStyle(
+                          color: _endDate == null ? Colors.grey : Colors.black,
+                          fontSize: 16,
+                        ),
+                      ),
+                      Icon(Icons.calendar_today, color: Colors.pink),
+                    ],
+                  ),
+                ),
               ),
-              SizedBox(height: 10),
-              Text("Flow Intensity", style: TextStyle(fontWeight: FontWeight.bold)),
-              DropdownButton<String>(
-                value: _flowIntensity,
-                hint: Text("Select intensity"),
-                isExpanded: true,
-                items: _intensityOptions.map((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
+
+
+              SizedBox(height: 20),
+              Text("Flow Intensity", style: AppTextStyles.mediumTextSemiBold(context)),
+
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: _intensityOptions.map((option) {
+                  return Row(
+                    children: [
+                      Radio<String>(
+                        value: option,
+                        groupValue: _flowIntensity,
+                        activeColor: Colors.pink,
+                        onChanged: (value) {
+                          setState(() {
+                            _flowIntensity = value;
+                          });
+                        },
+                      ),
+                      Text(option),
+                    ],
                   );
                 }).toList(),
-                onChanged: (String? value) {
-                  setState(() {
-                    _flowIntensity = value;
-                  });
-                },
               ),
-              SizedBox(height: 10),
-              Text("Notes", style: TextStyle(fontWeight: FontWeight.bold)),
+
+              SizedBox(height: 20),
+              Text("Notes (Optional)",  style: AppTextStyles.smallTextRegular(context)),
+              // CustomTextField(
+              //   controller: _noteController,
+              //     hintText: 'How do you feel today?',
+              //     isObscure: false,
+              //     isOptionalLeadingIcon: false,
+              //    // optionalLeadingIcon: Icons.lock,
+              //   ),
+              //  // maxLines: 3,
+              SizedBox(height: 20),
               TextField(
                 controller: _noteController,
+                maxLines: 7,
                 decoration: InputDecoration(
-                  hintText: 'Optional note...',
-                  border: OutlineInputBorder(),
+                  hintText: 'How do you feel today?',
+                  hintStyle: TextStyle(color: Colors.grey),
+                  filled: true,
+                  fillColor: Colors.grey[100],
+                  contentPadding: EdgeInsets.all(16),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey.shade400),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.pink, width: 2),
+                  ),
                 ),
-                maxLines: 3,
+              ),
+
+          
+
+              SizedBox(height: 20),
+              Center(
+                child: LongCustomButton(
+                  onTap: () => _savePeriodLog(context),
+                  title: 'Save Log',
+                ),
+
               ),
               SizedBox(height: 20),
               Center(
-                child: ElevatedButton(
-                  onPressed: () => _savePeriodLog(context),
-                  child: Text("Save Log"),
-                ),
+                // child: LongCustomButton(
+                //   onTap: () => _savePeriodLog(context),
+                //   title: 'Cancel',
+                // ),
+
               ),
               SizedBox(height: 30),
               Divider(),
-              Text("Period History", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text("Period History", style: AppTextStyles.mediumTextSemiBold(context)),
               SizedBox(height: 10),
               periodLogs.isEmpty
                   ? Text("No logs yet.")
