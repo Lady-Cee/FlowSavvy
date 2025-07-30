@@ -127,92 +127,90 @@ class _LoginScreenState extends State<LoginScreen> {
       //appBar: AppBar(title: Text("Login")),
       body: LayoutBuilder(
         builder: (context, constraints){
-          return Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: ListView(
-              //crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                CustomTextField(
-                  hintText: 'Enter Email',
-                  controller: _loginEmailController,
-                  isObscure: false,
-                  isOptionalLeadingIcon: true,
-                  optionalLeadingIcon: Icons.email,
-                ),
-                const SizedBox(height: 20),
+          return ListView(
+            //crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              CustomTextField(
+                hintText: 'Enter Email',
+                controller: _loginEmailController,
+                isObscure: false,
+                isOptionalLeadingIcon: true,
+                optionalLeadingIcon: Icons.email,
+              ),
+              const SizedBox(height: 20),
 
-                CustomTextField(
-                  hintText: 'Enter Password',
-                  controller: _loginPasswordController,
-                  isObscure: true,
-                  isOptionalLeadingIcon: true,
-                  optionalLeadingIcon: Icons.lock,
-                ),
+              CustomTextField(
+                hintText: 'Enter Password',
+                controller: _loginPasswordController,
+                isObscure: true,
+                isOptionalLeadingIcon: true,
+                optionalLeadingIcon: Icons.lock,
+              ),
 
-                SizedBox(height: 10),
-                Row(
-                  children: [
-                    Checkbox(
-                      value: authProvider.rememberMe,
-                      onChanged: (val) {
-                        authProvider.toggleRememberMe(val ?? false);
-                      },
-                    ),
-                    SizedBox(width: 5),
-                    Text("Remember me",
-                        style: AppTextStyles.smallTextRegular(context)),
-                    Spacer(),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pushNamed(context, '/forgotPassword');
-                      },
-                      child: Text(
-                        "Forgot Password?",
-                        style: AppTextStyles.smallTextSemiBold(context).copyWith(
-                          color: Colors.blue,
-                        ),
+              SizedBox(height: 10),
+              Row(
+                children: [
+                  Checkbox(
+                    value: authProvider.rememberMe,
+                    onChanged: (val) {
+                      authProvider.toggleRememberMe(val ?? false);
+                    },
+                  ),
+                  // SizedBox(width: 5),
+                  Text("Remember me",
+                      style: AppTextStyles.smallTextRegular(context).copyWith(fontSize: 14)),
+                  Spacer(),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pushNamed(context, '/forgotPassword');
+                    },
+                    child: Text(
+                      "Forgot Password?",
+                      style: AppTextStyles.semiBold(context).copyWith(
+                        color: Colors.blue,
+                        fontSize: 12
                       ),
-
                     ),
-                  ],
-                ),
-                SizedBox(height: 30),
-                _isLoading
-                    ? Center(child: CircularProgressIndicator())
-                    :  LongCustomButton(
-                  onTap: loginUser,
-                  title: 'Login',
-                ),
 
-                // ElevatedButton(
-                //   onPressed: loginUser,
-                //   child: Text("Login"),
-                // ),
-                SizedBox(height: 40),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Don't have an account?",
-                      style: AppTextStyles.smallTextRegular(context)
-                      ),
-                    SizedBox(width: 20),
-                    GestureDetector(
-                      onTap: () {
-                        Provider.of<IsLoginStateProvider>(context, listen: false).setSignup();
-                      },
-                      child: Text(
-                        "Sign Up",
-                        style: AppTextStyles.smallTextSemiBold(context).copyWith(
-                          color: Colors.blue,
-                        ),
-                      ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 30),
+              _isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  :  LongCustomButton(
+                onTap: loginUser,
+                title: 'Login',
+              ),
 
+              // ElevatedButton(
+              //   onPressed: loginUser,
+              //   child: Text("Login"),
+              // ),
+              SizedBox(height: 40),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Don't have an account?",
+                    style: AppTextStyles.smallTextRegular(context)
                     ),
-                  ],
-                ),
-              ],
-            ),
+                  SizedBox(width: 10),
+                  GestureDetector(
+                    onTap: () {
+                      Provider.of<IsLoginStateProvider>(context, listen: false).setSignup();
+                    },
+                    child: Text(
+                      "Sign Up",
+                      style: AppTextStyles.smallTextSemiBold(context).copyWith(
+                        color: Colors.blue,
+                      ),
+                    ),
+
+                  ),
+                ],
+              ),
+            ],
           );
         },
       ),

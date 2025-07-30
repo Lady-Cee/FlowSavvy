@@ -13,6 +13,8 @@ class AppStrings {
 
         // Home
         'defaultText': 'Please complete your profile to get predictions.',
+        'flowSavvyDashBoardText1': 'Flow Savvy Dashboard',
+        'homeStayHydratedText': 'Stay hydrated and maintain a healthy routine 🌸',
 
 
         // strings for onboarding pages
@@ -37,7 +39,7 @@ class AppStrings {
         'completeProfileSubTitleText': 'Tell us more about you so we can personalise your experience',
         'completeProfileNameText': 'Name',
         'completeProfileAgeText': 'Age',
-        'completeProfileAverageCycleText': 'Average Cycle Length (days)',
+        'completeProfileAverageCycleText': 'Average Cycle Length (days) if not sure use 28days',
         'completeProfileLastPeriodText': 'Last Period Start Date',
         'completeProfileNextPeriodIsText': 'Your next period is expected on: ',
         'completeProfileEstimatedOvulationText': 'Estimated ovulation day: ',
@@ -94,6 +96,8 @@ class AppStrings {
 
   // home
   String get defaultText => _localizedStrings['defaultText']!;
+  String get flowSavvyDashBoardText1 => _localizedStrings['flowSavvyDashBoardText1']!;
+  String get homeStayHydratedText => _localizedStrings['homeStayHydratedText']!;
 
   // for onboarding pages
   String get onboardingHeaderTitle1 => _localizedStrings['onboardingHeaderTitle1']!;
