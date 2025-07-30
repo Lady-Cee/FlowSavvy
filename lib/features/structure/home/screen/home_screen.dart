@@ -1,254 +1,249 @@
+import 'dart:math' as math;
 
-import 'package:flow_savvy/features/models/user_profilel.dart';
-import 'package:flow_savvy/features/services/firebase_auth_services.dart';
 import 'package:flow_savvy/features/utils/app_strings.dart';
+import 'package:flow_savvy/features/utils/app_text_styles.dart';
+import 'package:flow_savvy/features/widgets/long_custom_button.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../../providers/auth_provider.dart';
 import '../../../providers/user_profile_provider.dart';
+import '../../../utils/get_date_formatter.dart';
+import 'dart:math';
 
-class HomeScreen extends StatelessWidget {
-// final FireBaseAuthService auth = FireBaseAuthService();
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+  final AppStrings appStrings = AppStrings();
+
+  late AnimationController _controller;
+  late Animation<double> _pulseAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true);
+    _pulseAnimation = Tween<double>(begin: 0, end: 6).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   void logout(BuildContext context) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     await authProvider.logout();
     final prefs = await SharedPreferences.getInstance();
-    // await prefs.setBool('rememberMe', false);
-
     Navigator.pushReplacementNamed(context, '/login');
   }
-
-  final AppStrings appStrings = AppStrings();
-
 
   @override
   Widget build(BuildContext context) {
     final profile = Provider.of<UserProfileProvider>(context).userProfile;
+    final bool hasProfile = profile != null;
+    final username = (profile?.name.split(' ').first.toLowerCase()) ?? 'user';
+
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text('Flow Savvy Dashboard'),
+        title: !hasProfile
+            ? Text(appStrings.flowSavvyDashBoardText1, style: AppTextStyles.largeTextSemiBold(context))
+            : Text('Welcome, ${username} 👋', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        centerTitle: !hasProfile,
         actions: [
-          PopupMenuButton<int>(
-            icon: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Icon(Icons.menu),
+          !hasProfile
+              ? IconButton(
+            onPressed: () => logout(context),
+            icon: const Icon(Icons.exit_to_app),
+            tooltip: 'logout',
+          )
+              : Padding(
+            padding: const EdgeInsets.only(right: 24),
+            child: CircleAvatar(
+              child: IconButton(
+                onPressed: () {},
+                icon: const Icon(Icons.person),
+              ),
             ),
-            tooltip: 'Menu',
-            onSelected: (value) {
-              switch (value) {
-                case 0:
-                  Navigator.pushNamed(context, '/symptomLog');
-                  break;
-                case 1:
-                  Navigator.pushNamed(context, '/educational');
-                  break;
-                case 2:
-                  Navigator.pushNamed(context, '/profile');
-                  break;
-                case 3:
-                  Navigator.pushNamed(context, '/periodLog');
-                  break;
-                case 4:
-                  Navigator.pushNamed(context, '/support');
-                  break;
-                case 5:
-                  Navigator.pushNamed(context, '/menopause');
-                  break;
-              }
-            },
-            itemBuilder: (context) {
-              final items = <PopupMenuEntry<int>>[
-                PopupMenuItem(
-                  value: 0,
-                  child: Row(
-                    children: [
-                      Icon(Icons.monitor_heart, color: Colors.pink),
-                      SizedBox(width: 10),
-                      Text('My Symptom Log'),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  value: 1,
-                  child: Row(
-                    children: [
-                      Icon(Icons.library_books, color: Colors.pink),
-                      SizedBox(width: 10),
-                      Text('Educational Resource'),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  value: 2,
-                  child: Row(
-                    children: [
-                      Icon(Icons.person, color: Colors.pink),
-                      SizedBox(width: 10),
-                      Text('My Profile'),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  value: 3,
-                  child: Row(
-                    children: [
-                      Icon(Icons.calendar_today, color: Colors.pink),
-                      SizedBox(width: 10),
-                      Text('My Period Log'),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  value: 4,
-                  child: Row(
-                    children: [
-                      Icon(Icons.people_rounded, color: Colors.pink),
-                      SizedBox(width: 10),
-                      Text('Community Support'),
-                    ],
-                  ),
-                ),
-              ];
+          ),
+        ],
+      ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return Consumer<UserProfileProvider>(
+            builder: (context, profileProvider, _) {
+              final profile = profileProvider.userProfile;
+              final color = Theme.of(context).colorScheme;
 
-              // Only show Menopause Tips if profile is not null and age >= 40
-              if (profile != null && profile.age >= 40) {
-                items.add(
-                  PopupMenuItem(
-                    value: 5,
-                    child: Row(
-                      children: [
-                        Icon(Icons.female, color: Colors.pink),
-                        SizedBox(width: 10),
-                        Text('Menopause Tips'),
-                      ],
-                    ),
+              if (profile == null) {
+                return Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(appStrings.defaultText, style: const TextStyle(fontSize: 16), textAlign: TextAlign.center),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: constraints.maxWidth * 0.5,
+                        child: LongCustomButton(
+                          onTap: () => Navigator.pushNamed(context, '/profile'),
+                          title: 'Go to Profile',
+                        ),
+                      ),
+                    ],
                   ),
                 );
               }
 
-              return items;
-            },
-          ),
-          IconButton(onPressed: () => logout(context), icon: Icon(Icons.exit_to_app), tooltip: 'logout',)
+              final today = DateTime.now();
+              final predictedNextPeriod = profile.predictedNextPeriod;
+              final lastPeriodDate = profile.lastPeriodDate;
+              final cycleLength = profile.cycleLength;
+              final predictedOvulation = lastPeriodDate.add(const Duration(days: 14));
 
-        ],
-      ),
-      body: Consumer<UserProfileProvider>(
-        builder: (context, profileProvider, _) {
-          final profile = profileProvider.userProfile;
+              final formattedNextPeriod = (predictedNextPeriod != null)
+                  ? DateFormat('MMM dd').format(predictedNextPeriod)
+                  : 'Not available';
 
-          if (profile == null) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    appStrings.defaultText,
-                    style: TextStyle(fontSize: 16),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/profile');
-                    },
-                    child: Text('Go to Profile'),
-                  ),
-                ],
-              ),
-            );
-          }
+              final periodStatus = (predictedNextPeriod != null)
+                  ? _getPeriodStatus(predictedNextPeriod, today)
+                  : '';
 
-          final nextPeriod = profile.predictedNextPeriod != null
-              ? DateFormat('MMM dd, yyyy').format(profile.predictedNextPeriod!)
-              : 'Not available';
+              final daysUntilNextPeriod = (predictedNextPeriod != null)
+                  ? predictedNextPeriod.difference(today).inDays
+                  : null;
 
-          final ovulationDate = profile.predictedOvulation != null
-              ? DateFormat('MMM dd, yyyy').format(profile.predictedOvulation!)
-              : 'Not available';
+              final borderColor = (daysUntilNextPeriod != null && daysUntilNextPeriod <= 2 && daysUntilNextPeriod >= 0)
+                  ? Colors.pink.shade100
+                  : Colors.grey.shade400;
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Welcome, ${profile.name} 👋',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 20),
-                Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: ListTile(
-                    title: Text('Next Period'),
-                    subtitle: Text(nextPeriod),
-                    leading: Icon(Icons.calendar_today, color: Colors.pink),
-                  ),
-                ),
-                SizedBox(height: 10),
-                Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: ListTile(
-                    title: Text('Predicted Ovulation'),
-                    subtitle: Text(ovulationDate),
-                    leading: Icon(Icons.favorite, color: Colors.redAccent),
-                  ),
-                ),
-                SizedBox(height: 20),
-                Text(
-                  'Stay hydrated and maintain a healthy routine 🌸',
-                  style: TextStyle(color: Colors.grey[700]),
-                ),
-                SizedBox(height: 30),
-                GridView.count(
-                  crossAxisCount: 2,
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
+              final progress = (today.difference(lastPeriodDate).inDays / cycleLength).clamp(0.0, 1.0);
+
+              double ringSize = math.min(constraints.maxWidth * 0.75, 300.0);
+              double innerRingSize = ringSize * 0.88;
+
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildFeatureCard(
-                      context,
-                      title: 'My Period Log',
-                      icon: Icons.calendar_today,
-                      routeName: '/periodLog',
+                    Text(getFormattedDate(), style: AppTextStyles.semiBold(context)),
+                    Card(
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      child: ListTile(
+                        title: Text(_getCycleDayText(lastPeriodDate, cycleLength), style: AppTextStyles.smallTextRegular(context)),
+                        subtitle: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.favorite, color: color.primary, size: 16),
+                            const SizedBox(width: 4),
+                            Text(
+                              _getOvulationCountdown(predictedOvulation, today),
+                              style: AppTextStyles.smallTextRegular(context).copyWith(fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                    _buildFeatureCard(
-                      context,
-                      title: 'My Symptom Log',
-                      icon: Icons.monitor_heart,
-                      routeName: '/symptomLog',
+                    const SizedBox(height: 24),
+                    Center(
+                      child: SizedBox(
+                        width: ringSize,
+                        height: ringSize,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 500),
+                              width: ringSize,
+                              height: ringSize,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(color: borderColor, width: 2.0 + _pulseAnimation.value),
+                              ),
+                            ),
+                            SizedBox(
+                              width: innerRingSize,
+                              height: innerRingSize,
+                              child: CustomPaint(
+                                painter: ProgressRingPainter(progress: progress, color: color.primary),
+                              ),
+                            ),
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 500),
+                              width: innerRingSize,
+                              height: innerRingSize,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(color: borderColor, width: 1.0 + (_pulseAnimation.value / 2)),
+                              ),
+                            ),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.deepPurple.shade200,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: const Text('Period in:', style: TextStyle(color: Colors.white)),
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  daysUntilNextPeriod != null
+                                      ? (daysUntilNextPeriod > 0
+                                      ? '$daysUntilNextPeriod days'
+                                      : (daysUntilNextPeriod == 0
+                                      ? 'Today'
+                                      : '${daysUntilNextPeriod.abs()} days late'))
+                                      : '--',
+                                  style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Last Period on ${DateFormat('MMMM d yyyy').format(lastPeriodDate)}',
+                                  textAlign: TextAlign.center,
+                                  style: AppTextStyles.semiBold(context).copyWith(fontSize: 12),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                    _buildFeatureCard(
-                      context,
-                      title: 'Educational Resource',
-                      icon: Icons.library_books,
-                      routeName: '/educational',
+                    const SizedBox(height: 24),
+                    Card(
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      child: ListTile(
+                        title: Text('Next Period', style: AppTextStyles.smallTextRegular(context)),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.calendar_today, color: color.primary, size: 16),
+                            const SizedBox(width: 4),
+                            Text('$formattedNextPeriod • $periodStatus', style: TextStyle(color: Colors.grey[700])),
+                          ],
+                        ),
+                      ),
                     ),
-                    _buildFeatureCard(
-                      context,
-                      title: 'My Profile',
-                      icon: Icons.person,
-                      routeName: '/profile',
-                    ),
-                    _buildFeatureCard(
-                      context,
-                      title: 'Community Support',
-                      icon: Icons.people_rounded,
-                      routeName: '/support',
-                    ),
-                    // ✅ Show this only if age >= 40
+                    const SizedBox(height: 10),
+
                     if (profile.age >= 40)
                       _buildFeatureCard(
                         context,
@@ -256,14 +251,36 @@ class HomeScreen extends StatelessWidget {
                         icon: Icons.female,
                         routeName: '/menopause',
                       ),
+                    const SizedBox(height: 10),
+                    Center(child: Text(appStrings.homeStayHydratedText, style: TextStyle(color: Colors.grey[700]), textAlign: TextAlign.center,)),
+                    const SizedBox(height: 10),
                   ],
                 ),
-              ],
-            ),
+              );
+            },
           );
         },
       ),
     );
+  }
+
+  String _getPeriodStatus(DateTime predictedDate, DateTime today) {
+    final daysLate = today.difference(predictedDate).inDays;
+    if (daysLate == 0) return 'due today';
+    if (daysLate > 0) return '$daysLate days late';
+    return 'in ${daysLate.abs()} days';
+  }
+
+  String _getOvulationCountdown(DateTime date, DateTime today) {
+    final difference = date.difference(today).inDays;
+    if (difference > 0) return 'Ovulation in $difference days';
+    if (difference == 0) return 'Ovulation is today!';
+    return 'Ovulation was ${difference.abs()} days ago';
+  }
+
+  String _getCycleDayText(DateTime lastPeriod, int cycleLen) {
+    final dayOfCycle = DateTime.now().difference(lastPeriod).inDays + 1;
+    return 'Day $dayOfCycle of $cycleLen-day cycle';
   }
 
   Widget _buildFeatureCard(BuildContext context,
@@ -273,13 +290,13 @@ class HomeScreen extends StatelessWidget {
       child: Card(
         elevation: 4,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
             children: [
-              Icon(icon, size: 40, color: Colors.pink),
-              SizedBox(height: 10),
-              Text(title, style: TextStyle(fontSize: 16), textAlign: TextAlign.center, ),
+              Icon(icon, size: 30, color: Theme.of(context).colorScheme.primary),
+              SizedBox(width: 10),
+              Text(title, style: AppTextStyles.mediumTextSemiBold(context) ),
             ],
           ),
         ),
@@ -288,146 +305,42 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
+class ProgressRingPainter extends CustomPainter {
+  final double progress;
+  final Color color;
 
+  ProgressRingPainter({required this.progress, required this.color});
 
-// import 'package:flutter/material.dart';
-// import 'package:provider/provider.dart';
-// import 'package:shared_preferences/shared_preferences.dart';
-//
-// import '../../../providers/auth_provider.dart';
-// import '../../../providers/user_profile_provider.dart';
-// import '../../../utils/app_strings.dart';
-// import '../../educational/screen/educational_resource_screen.dart';
-// import '../../menopause/menopause_screen.dart';
-// import '../../period/screen/period_log_screen.dart';
-// import '../../support/screen/community_support_screen.dart';
-// import '../../symptom/screen/symptom_log_screen.dart';
-// import '../../user/screen/user_profile_screen.dart';
-//
-// class HomeScreen extends StatefulWidget {
-//   @override
-//   _HomeScreenState createState() => _HomeScreenState();
-// }
-//
-// class _HomeScreenState extends State<HomeScreen> {
-//   final AppStrings appStrings = AppStrings();
-//   int _selectedIndex = 0;
-//
-//   void _onTabSelected(int index) {
-//     setState(() {
-//       _selectedIndex = index;
-//     });
-//   }
-//
-//   void logout(BuildContext context) async {
-//     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-//     await authProvider.logout();
-//     final prefs = await SharedPreferences.getInstance();
-//     Navigator.pushReplacementNamed(context, '/login');
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     final profile = Provider.of<UserProfileProvider>(context).userProfile;
-//
-//     final bool showMenopause = profile != null && profile.age >= 40;
-//
-//     // final pages = <Widget>[
-//     //   _buildPage('My Period Log', Icons.calendar_today),
-//     //   _buildPage('My Symptom Log', Icons.monitor_heart),
-//     //   _buildPage('Educational Resource', Icons.library_books),
-//     //   _buildPage('My Profile', Icons.person),
-//     //   _buildPage('Community Support', Icons.people_rounded),
-//     //   if (showMenopause) _buildPage('Menopause Tips', Icons.female),
-//     // ];
-//     final pages = <Widget>[
-//       PeriodLogScreen(),
-//       SymptomLogScreen(),
-//       EducationalResourceScreen(),
-//       UserProfileScreen(),
-//       CommunitySupportScreen(),
-//       if (showMenopause) MenopauseScreen(),
-//     ];
-//
-//
-//     final tabs = <BottomNavigationBarItem>[
-//       BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: 'Period Log'),
-//       BottomNavigationBarItem(icon: Icon(Icons.monitor_heart), label: 'Symptoms'),
-//       BottomNavigationBarItem(icon: Icon(Icons.library_books), label: 'Resources'),
-//       BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-//       BottomNavigationBarItem(icon: Icon(Icons.people_rounded), label: 'Support'),
-//       if (showMenopause)
-//         BottomNavigationBarItem(icon: Icon(Icons.female), label: 'Menopause'),
-//     ];
-//
-//     return Scaffold(
-//       appBar: AppBar(
-//         automaticallyImplyLeading: false,
-//         title: Text('Flow Savvy Dashboard'),
-//         actions: [
-//           IconButton(
-//             icon: Icon(Icons.exit_to_app),
-//             tooltip: 'Logout',
-//             onPressed: () => logout(context),
-//           )
-//         ],
-//       ),
-//       body: Consumer<UserProfileProvider>(
-//         builder: (context, profileProvider, _) {
-//           final profile = profileProvider.userProfile;
-//
-//           if (profile == null) {
-//             return Center(
-//               child: Column(
-//                 mainAxisSize: MainAxisSize.min,
-//                 children: [
-//                   Text(
-//                     appStrings.defaultText,
-//                     style: TextStyle(fontSize: 16),
-//                     textAlign: TextAlign.center,
-//                   ),
-//                   SizedBox(height: 16),
-//                   ElevatedButton(
-//                     onPressed: () {
-//                       Navigator.pushNamed(context, '/profile');
-//                     },
-//                     child: Text('Go to Profile'),
-//                   ),
-//                 ],
-//               ),
-//             );
-//           }
-//
-//           return pages[_selectedIndex];
-//         },
-//       ),
-//       bottomNavigationBar: BottomNavigationBar(
-//         currentIndex: _selectedIndex,
-//         onTap: _onTabSelected,
-//         type: BottomNavigationBarType.fixed,
-//         selectedItemColor: Colors.pink,
-//         unselectedItemColor: Colors.grey,
-//         items: tabs,
-//       ),
-//     );
-//   }
-//   //
-//   // Widget _buildPage(String title, IconData icon) {
-//   //   return Center(
-//   //     child: Column(
-//   //       mainAxisSize: MainAxisSize.min,
-//   //       children: [
-//   //         Icon(icon, size: 60, color: Colors.pink),
-//   //         SizedBox(height: 16),
-//   //         Text(title, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-//   //         SizedBox(height: 8),
-//   //         Text('This is the $title screen', textAlign: TextAlign.center),
-//   //       ],
-//   //     ),
-//   //   );
-//   // }
-// }
-//
-//
-//
+  @override
+  void paint(Canvas canvas, Size size) {
+    final strokeWidth = 6.0;
+    final radius = (size.width / 2) - (strokeWidth / 2);
+    final center = Offset(size.width / 2, size.height / 2);
 
+    final basePaint = Paint()
+      ..color = Colors.grey.shade300
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke;
+
+    final progressPaint = Paint()
+      ..color = color
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawCircle(center, radius, basePaint);
+    final sweepAngle = 2 * pi * progress;
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      -pi / 2,
+      sweepAngle,
+      false,
+      progressPaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant ProgressRingPainter oldDelegate) {
+    return oldDelegate.progress != progress || oldDelegate.color != color;
+  }
+}

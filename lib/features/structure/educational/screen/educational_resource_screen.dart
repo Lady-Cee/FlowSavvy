@@ -24,6 +24,17 @@ class _EducationalResourceScreenState extends State<EducationalResourceScreen> {
         title: Text('Educational Resources'),
         centerTitle: true,
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.pushNamed(context, '/search');
+
+          // Navigator.push(
+          //   context,
+          //   MaterialPageRoute(builder: (context) => GeminiSearchScreen()),
+          // );
+        },
+        child: Icon(Icons.question_mark),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -98,32 +109,32 @@ class _EducationalResourceScreenState extends State<EducationalResourceScreen> {
                 ],
               ),
             ),
-            SizedBox(height: MediaQuery.of(context).size.height * 0.06),
-            Container(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/search');
-
-                  // Navigator.push(
-                  //   context,
-                  //   MaterialPageRoute(builder: (context) => GeminiSearchScreen()),
-                  // );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green.shade400,
-                  foregroundColor: Colors.white,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text("Looking for more info?️", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                    SizedBox(width: MediaQuery.of(context).size.width * 0.02),
-                 //   Icon(Icons.arrow_forward)
-                  ],
-                ),
-              ),
-            )
+            //SizedBox(height: MediaQuery.of(context).size.height * 0.06),
+            // Container(
+            //   width: double.infinity,
+            //   child: ElevatedButton(
+            //     onPressed: () {
+            //       Navigator.pushNamed(context, '/search');
+            //
+            //       // Navigator.push(
+            //       //   context,
+            //       //   MaterialPageRoute(builder: (context) => GeminiSearchScreen()),
+            //       // );
+            //     },
+            //     style: ElevatedButton.styleFrom(
+            //       backgroundColor: Colors.green.shade400,
+            //       foregroundColor: Colors.white,
+            //     ),
+            //     child: Row(
+            //       mainAxisSize: MainAxisSize.min,
+            //       children: [
+            //         Text("Looking for more info?️", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            //         SizedBox(width: MediaQuery.of(context).size.width * 0.02),
+            //      //   Icon(Icons.arrow_forward)
+            //       ],
+            //     ),
+            //   ),
+            // )
           ],
 
         ),

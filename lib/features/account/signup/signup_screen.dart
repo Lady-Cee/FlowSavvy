@@ -84,74 +84,71 @@ class _SignupScreenState extends State<SignupScreen> {
     //  appBar: AppBar(title: Text("Sign Up")),
       body: LayoutBuilder(
         builder: (context, constraints) {
-          return Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: ListView(
-              children: [
-                CustomTextField(
-                  hintText: 'Enter First Name',
-                  controller: firstNameController,
-                  isObscure: false,
-                  isOptionalLeadingIcon: true,
-                  optionalLeadingIcon: Icons.person,
-                ),
-                SizedBox(height: 20),
-                CustomTextField(
-                  hintText: 'Enter Surname',
-                  controller: surnameController,
-                  isObscure: false,
-                  isOptionalLeadingIcon: true,
-                  optionalLeadingIcon: Icons.person,
-                ),
-                SizedBox(height: 20),
-                CustomTextField(
-                  hintText: 'Enter Email',
-                  controller: emailController,
-                  isObscure: false,
-                  isOptionalLeadingIcon: true,
-                  optionalLeadingIcon: Icons.email,
-                ),
-                SizedBox(height: 20),
-                CustomTextField(
-                  hintText: 'Enter Password',
-                  controller: passwordController,
-                  isObscure: true,
-                  isOptionalLeadingIcon: true,
-                  optionalLeadingIcon: Icons.lock,
+          return ListView(
+            children: [
+              CustomTextField(
+                hintText: 'Enter First Name',
+                controller: firstNameController,
+                isObscure: false,
+                isOptionalLeadingIcon: true,
+                optionalLeadingIcon: Icons.person,
+              ),
+              SizedBox(height: 20),
+              CustomTextField(
+                hintText: 'Enter Surname',
+                controller: surnameController,
+                isObscure: false,
+                isOptionalLeadingIcon: true,
+                optionalLeadingIcon: Icons.person,
+              ),
+              SizedBox(height: 20),
+              CustomTextField(
+                hintText: 'Enter Email',
+                controller: emailController,
+                isObscure: false,
+                isOptionalLeadingIcon: true,
+                optionalLeadingIcon: Icons.email,
+              ),
+              SizedBox(height: 20),
+              CustomTextField(
+                hintText: 'Enter Password',
+                controller: passwordController,
+                isObscure: true,
+                isOptionalLeadingIcon: true,
+                optionalLeadingIcon: Icons.lock,
 
-                ),
-                SizedBox(height: 20),
-                CustomTextField(
-                  hintText: 'Confirm Password',
-                  controller: confirmPasswordController,
-                  isObscure: true,
-                  isOptionalLeadingIcon: true,
-                  optionalLeadingIcon: Icons.lock,
-                ),
-                SizedBox(height: 40),
-                LongCustomButton(
-                  onTap: () => signUpUser() ,
-                  title: "Sign Up",
-                ),
-                SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text("Already have an account? "),
-                    GestureDetector(
-                      onTap: () {
-                       // Navigator.pushNamed(context, '/loginSignUpScreen');
-                        Provider.of<IsLoginStateProvider>(context, listen: false).setLogin();
-                      },
-                      child: Text(
-                        "Login",
-                        style: TextStyle(color: Colors.blue),
-                      ),
+              ),
+              SizedBox(height: 20),
+              CustomTextField(
+                hintText: 'Confirm Password',
+                controller: confirmPasswordController,
+                isObscure: true,
+                isOptionalLeadingIcon: true,
+                optionalLeadingIcon: Icons.lock,
+              ),
+              SizedBox(height: 40),
+              LongCustomButton(
+                onTap: () => signUpUser() ,
+                title: "Sign Up",
+              ),
+              SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text("Already have an account? "),
+                  GestureDetector(
+                    onTap: () {
+                     // Navigator.pushNamed(context, '/loginSignUpScreen');
+                      Provider.of<IsLoginStateProvider>(context, listen: false).setLogin();
+                    },
+                    child: Text(
+                      "Login",
+                      style: TextStyle(color: Colors.blue),
                     ),
-                  ],
-                ),
-              ],
-            ),
+                  ),
+                ],
+              ),
+            ],
           );
 
         }

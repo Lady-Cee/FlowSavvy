@@ -36,6 +36,7 @@ import 'features/providers/symptom_log_provider.dart';
 import 'features/providers/user_profile_provider.dart';
 import 'features/services/firebase_auth_services.dart';
 import 'features/services/splash_service.dart';
+import 'features/structure/bottom_navigation/bottom_navigation_screen.dart';
 import 'features/structure/home/screen/profile_complete_screen.dart';
 import 'features/structure/product/screen/product_screen.dart';
 import 'features/structure/splash/splash_screen.dart';
@@ -45,7 +46,7 @@ import 'features/structure/support/screen/doctor_screen.dart';
 import 'features/structure/support/screen/mental_health_professional_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'features/utils/app_strings.dart';
-import 'features/structure/home/screen/login_signup_screen.dart';
+import 'features/account/login/login_signup_screen.dart';
 import 'firebase_options.dart';
 // import 'package:provider/provider.dart';
 // import 'features/providers/educational_resource_provider.dart';
@@ -124,7 +125,7 @@ class MyApp extends StatelessWidget {
         home: LoginSignUpScreen(),
         routes: {
           '/test': (_) => TestScreen(),
-          '/home': (_) => HomeScreen(),
+          '/home': (_) => BottomNavigationScreen(),
           '/onboarding': (_) => OnboardingScreen(),
           '/periodLog': (_) => PeriodLogScreen(),
           '/symptomLog': (_) => SymptomLogScreen(),
@@ -141,8 +142,8 @@ class MyApp extends StatelessWidget {
           '/signup' : (_) => SignupScreen(),
           '/forgotPassword' : (_) => ForgotPasswordScreen(),
           '/menopause' : (_) => MenopauseScreen(),
-          '/profileCompleteScreen' : (_) => ProfileCompleteScreen(),
-          '/loginSignUpScreen' : (_) => LoginSignUpScreen(),
+          // '/profileCompleteScreen' : (_) => ProfileCompleteScreen(),
+          'loginSignUpScreen' : (_) => LoginSignUpScreen(),
 
         },
       ),
