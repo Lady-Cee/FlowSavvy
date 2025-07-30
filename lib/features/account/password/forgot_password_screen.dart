@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/auth_provider.dart';
+import '../../utils/app_text_styles.dart';
+import '../../widgets/custom_text_field.dart';
+import '../../widgets/long_custom_button.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -42,29 +45,38 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
-            TextField(
-              controller: emailController,
-              decoration: InputDecoration(
-                labelText: "Email",
-                prefixIcon: Icon(Icons.email), // Email icon added here
-              ),
+
+          CustomTextField(
+          hintText: 'Enter Email',
+          controller: emailController,
+          isObscure: false,
+          isOptionalLeadingIcon: true,
+          optionalLeadingIcon: Icons.email,
+        ),
+          const SizedBox(height: 20),
+            // SizedBox(height: 20),
+            // ElevatedButton(
+            //   onPressed: () => resetPassword(),
+            //   child: Text("Reset Password"),
+            // ),
+            LongCustomButton(
+              onTap: () => resetPassword(),
+              title: 'Reset Password',
             ),
             SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => resetPassword(),
-              child: Text("Reset Password"),
-            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text("Remember your password? "),
+                Text("Remember your password? ",
+                    style: AppTextStyles.smallTextRegular(context)),
                 GestureDetector(
                   onTap: () {
-                    Navigator.pushNamed(context, '/login');
+                    Navigator.pushNamed(context, '/loginSignUpScreen');
                   },
                   child: Text(
                     "Login",
-                    style: TextStyle(color: Colors.blue),
+                    style: AppTextStyles.smallTextSemiBold(context).copyWith(
+                        color: Colors.blue),
                   ),
                 ),
               ],

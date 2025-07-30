@@ -142,7 +142,7 @@ class MyApp extends StatelessWidget {
           '/forgotPassword' : (_) => ForgotPasswordScreen(),
           '/menopause' : (_) => MenopauseScreen(),
           '/profileCompleteScreen' : (_) => ProfileCompleteScreen(),
-          'loginSignUpScreen' : (_) => LoginSignUpScreen(),
+          '/loginSignUpScreen' : (_) => LoginSignUpScreen(),
 
         },
       ),
