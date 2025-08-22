@@ -12,17 +12,18 @@ class MythsScreen extends StatefulWidget {
 }
 
 class _MythsScreenState extends State<MythsScreen> {
-  // Track visibility for each fact individually
-  late List<bool> factVisibility;
   late List<MythsAndFactsModel> filteredList;
+  late List<bool> factVisibility;
   AppStrings appStrings = AppStrings();
   TextEditingController searchController = TextEditingController();
+
+  bool isSearching = false; // 🔑 track search mode
 
   @override
   void initState() {
     super.initState();
+    filteredList = List.from(mythsAndFacts);
     factVisibility = List.generate(mythsAndFacts.length, (_) => false);
-    filteredList = List.from(mythsAndFacts); // start with full list
   }
 
   void toggleFact(int index) {
@@ -42,7 +43,15 @@ class _MythsScreenState extends State<MythsScreen> {
             item.fact.toLowerCase().contains(query.toLowerCase()))
             .toList();
       }
-      // reset visibility list so indices stay consistent
+      factVisibility = List.generate(filteredList.length, (_) => false);
+    });
+  }
+
+  void clearSearch() {
+    setState(() {
+      searchController.clear();
+      isSearching = false;
+      filteredList = List.from(mythsAndFacts);
       factVisibility = List.generate(filteredList.length, (_) => false);
     });
   }
@@ -52,44 +61,53 @@ class _MythsScreenState extends State<MythsScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: Icon(Icons.chevron_left),
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.chevron_left),
         ),
-        title: Text(
+        title: !isSearching
+            ? Text(
           appStrings.mythsAndFactsTitleText,
           style: AppTextStyles.mediumTextSemiBold(context),
+        )
+            : TextField(
+          controller: searchController,
+          autofocus: true,
+          onChanged: filterMyths,
+          style: AppTextStyles.mediumTextSemiBold(context),
+          decoration: const InputDecoration(
+            hintText: "Search myths...",
+            border: InputBorder.none,
+          ),
         ),
         centerTitle: true,
+        actions: [
+          isSearching
+              ? IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: clearSearch,
+          )
+              : IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              setState(() {
+                isSearching = true;
+              });
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: AppConstants.scaffoldPadding,
         child: Column(
           children: [
-            Text(
-              'Ever wondered which period beliefs are fact and myths? '
-                  'Test your knowledge and discover the truth!',
-              style: AppTextStyles.semiBold(context),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 10),
-
-            // 🔍 Search bar
-            TextField(
-              controller: searchController,
-              onChanged: filterMyths,
-              decoration: InputDecoration(
-                hintText: "Search myths...",
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
+            if (!isSearching) // 🔑 show intro text only when not searching
+              Text(
+                'Ever wondered which period beliefs are fact and myths? '
+                    'Test your knowledge and discover the truth!',
+                style: AppTextStyles.semiBold(context),
+                textAlign: TextAlign.center,
               ),
-            ),
             const SizedBox(height: 10),
-
-            // 📋 Filtered list
             Expanded(
               child: ListView.builder(
                 itemCount: filteredList.length,
