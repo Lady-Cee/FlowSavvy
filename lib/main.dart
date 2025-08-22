@@ -60,7 +60,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load();
   Gemini.init(apiKey: dotenv.env['GEMINI_API_KEY']!);
-  print("Gemini Key: ${dotenv.env['GEMINI_API_KEY']}");
+  // print("Gemini Key: ${dotenv.env['GEMINI_API_KEY']}");
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,

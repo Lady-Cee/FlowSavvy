@@ -47,6 +47,11 @@ class AppStrings {
         'completeProfileWeValueText': 'We value your privacy. Your information stay secure with us',
 
 
+
+        // Myths and facts page
+        'mythsAndFactsTitleText': 'Myths & Facts',
+        'mythsAndFactsViewFactText': 'View Fact',
+
         // for login and sign up
         // 'loginHeaderText': 'Welcome Back',
         // 'loginSubtitleText': 'Log in to continue your journey',
@@ -126,6 +131,10 @@ class AppStrings {
   String get saveProfileBtnText => _localizedStrings['saveProfileBtnText']!;
   String get completeProfileWeValueText => _localizedStrings['completeProfileWeValueText']!;
 
+
+  // myths and facts page
+  String get mythsAndFactsTitleText => _localizedStrings['mythsAndFactsTitleText']!;
+  String get mythsAndFactsViewFactText => _localizedStrings['mythsAndFactsViewFactText']!;
 
   // for login and sign up
   // String get loginHeaderText => _localizedStrings['loginHeaderText']!;
