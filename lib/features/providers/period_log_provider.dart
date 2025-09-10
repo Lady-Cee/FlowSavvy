@@ -28,6 +28,11 @@ class PeriodLogProvider with ChangeNotifier {
 
     notifyListeners();
   }
+
+  void removeLog(int index){
+    _logs.removeAt(index);
+    notifyListeners();
+  }
 }
 
 

@@ -39,7 +39,7 @@ class _PeriodLogScreenState extends State<PeriodLogScreen> {
   void _savePeriodLog(BuildContext context) {
     if (_startDate == null || _endDate == null || _flowIntensity == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please complete all fields')),
+        SnackBar(content: Text('Please complete all fields'), backgroundColor: Colors.red,),
       );
       return;
     }
@@ -73,6 +73,7 @@ class _PeriodLogScreenState extends State<PeriodLogScreen> {
   @override
   Widget build(BuildContext context) {
     final periodLogs = Provider.of<PeriodLogProvider>(context).logs;
+    final appColor = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -227,12 +228,17 @@ class _PeriodLogScreenState extends State<PeriodLogScreen> {
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
                 itemCount: periodLogs.length,
-                // itemBuilder: (ctx, index) {
-                //   final log = periodLogs[index];
                 itemBuilder: (ctx, index) {
                   final log = periodLogs[index];
                   return Card(
                     elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(
+                        color: appColor.primary.withOpacity(0.5),
+                        width: 1,
+                      ),
+                    ),
                     margin: EdgeInsets.symmetric(vertical: 6),
                     child: ListTile(
                       title: Text("Start: ${_formatDate(log.startDate)}"),
@@ -251,11 +257,33 @@ class _PeriodLogScreenState extends State<PeriodLogScreen> {
                           ),
                         ],
                       ),
+                        trailing: IconButton(
+                          icon: Icon(Icons.delete, color: Colors.red),
+                          onPressed: () {
+                            final provider = Provider.of<PeriodLogProvider>(context, listen: false);
+                            final deletedLog = periodLogs[index]; // keep reference
+                            provider.removeLog(index);
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text("Log deleted"),
+                                backgroundColor: appColor.primary,
+                                action: SnackBarAction(
+                                  label: "Undo",
+                                  textColor: Colors.white,
+                                  onPressed: () {
+                                    provider.addLog(deletedLog); // restore the deleted log
+                                  },
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                     ),
                   );
                 },
-              ),
-            ],
+              )
+          ],
           ),
         ),
       ),
