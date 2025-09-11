@@ -5,7 +5,7 @@ class PeriodLog {
   final DateTime endDate;
   final String flowIntensity;
   final String? note;
-  int? cycleLength; // <-- New field
+  int? cycleLength;
 
   PeriodLog({
     required this.startDate,
@@ -17,7 +17,30 @@ class PeriodLog {
 
   String get monthLabel => DateFormat('MMMM yyyy').format(startDate);
   String get month => DateFormat('MMMM').format(startDate);
+
+  // ✅ Convert to Map for Firestore & SharedPreferences
+  Map<String, dynamic> toMap() {
+    return {
+      'startDate': startDate.toIso8601String(),
+      'endDate': endDate.toIso8601String(),
+      'flowIntensity': flowIntensity,
+      'note': note,
+      'cycleLength': cycleLength,
+    };
+  }
+
+  // ✅ Create from Map
+  factory PeriodLog.fromMap(Map<String, dynamic> map) {
+    return PeriodLog(
+      startDate: DateTime.parse(map['startDate']),
+      endDate: DateTime.parse(map['endDate']),
+      flowIntensity: map['flowIntensity'],
+      note: map['note'],
+      cycleLength: map['cycleLength'],
+    );
+  }
 }
+
 
 
 // import 'package:intl/intl.dart';

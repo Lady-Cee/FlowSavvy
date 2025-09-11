@@ -22,6 +22,7 @@ class _GeminiSearchScreenState extends State<GeminiSearchScreen> {
   @override
   Widget build(BuildContext context) {
     final geminiProvider = Provider.of<GeminiProvider>(context);
+    final appColor = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -48,13 +49,16 @@ class _GeminiSearchScreenState extends State<GeminiSearchScreen> {
                       border: OutlineInputBorder(),
                     ),
                     onSubmitted: (_) => _submitQuery(context),
+                    maxLines: 3,
                   ),
                 ),
                 SizedBox(width: 10),
-                ElevatedButton(
-                  onPressed: () => _submitQuery(context),
-                  child: Text('Search'),
-                ),
+                Container(
+                    decoration: BoxDecoration(
+                      color: appColor.primary,
+                      borderRadius: BorderRadius.circular(12)
+                    ),
+                    child: IconButton(onPressed: () => _submitQuery(context), icon: Icon(Icons.search, color: appColor.secondary,))),
               ],
             ),
           ),
@@ -68,24 +72,49 @@ class _GeminiSearchScreenState extends State<GeminiSearchScreen> {
               itemBuilder: (ctx, i) {
                 final response = geminiProvider.responses[i];
                 return Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(
+                      color: appColor.primary.withOpacity(0.5),
+                      width: 1,
+                    ),
+                  ),
                   margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Column(
+                  child: ListTile(
+                    title: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          "You asked:",
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        Text(response.userQuery),
+                        Text("You asked:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                        Text(response.userQuery, style: TextStyle(fontSize: 16)),
                         SizedBox(height: 10),
-                        Text(
-                          "Gemini says:",
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        Text(response.answer),
+                        Text("Gemini says:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                        Text(response.answer, style: TextStyle(fontSize: 16)),
                       ],
+                    ),
+                    trailing: IconButton(
+                      icon: Icon(Icons.delete, color: Colors.red),
+                      onPressed: () {
+                        final provider = Provider.of<GeminiProvider>(context, listen: false);
+
+                        // remove and keep a copy
+                        final deletedResponse = provider.removeResponseAt(i);
+
+                        // show snackbar with undo
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Record deleted"),
+                            backgroundColor: appColor.primary,
+                            action: SnackBarAction(
+                              label: "Undo",
+                              textColor: Colors.white,
+                              onPressed: () {
+                                // re-insert at the same position
+                                provider.insertResponseAt(i, deletedResponse);
+                              },
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 );

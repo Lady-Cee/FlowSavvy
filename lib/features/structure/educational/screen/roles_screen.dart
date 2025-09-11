@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 
+import '../../../theme/app_theme.dart';
+
 class RolesScreen extends StatelessWidget {
    RolesScreen({super.key});
 
+
   @override
   Widget build(BuildContext context) {
+    final appColor = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(title: const Text('Roles & Responsibilities')),
       body: ListView.builder(
@@ -13,7 +17,7 @@ class RolesScreen extends StatelessWidget {
         itemBuilder: (context, i) => Card(
           margin: const EdgeInsets.symmetric(vertical: 6),
           child: ExpansionTile(
-            leading: const Icon(Icons.group, color: Colors.purple),
+            leading: Icon(Icons.group, color: appColor.primary),
             title: Text(
               roles[i]['group']!,
               style: const TextStyle(fontWeight: FontWeight.bold),

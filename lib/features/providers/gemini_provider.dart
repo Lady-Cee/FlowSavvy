@@ -42,6 +42,31 @@ class GeminiProvider with ChangeNotifier {
     _responses.clear();
     notifyListeners();
   }
+
+
+  // // returns nothing - hence the item deleted cannot be restored.
+  // void deleteResponse(int index) {
+  //   _responses.removeAt(index);
+  //   notifyListeners();
+  // }
+
+  // returns the removed item - hence it can be restored.
+  GeminiResponseModel removeResponseAt(int index) {
+    final removed = _responses.removeAt(index);
+    notifyListeners();
+    return removed;
+  }
+
+  void insertResponseAt(int index, GeminiResponseModel response) {
+    if (index < 0 || index > _responses.length) {
+      _responses.add(response);
+    } else {
+      _responses.insert(index, response);
+    }
+    notifyListeners();
+  }
+
+
 }
 
 

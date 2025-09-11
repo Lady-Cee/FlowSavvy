@@ -82,40 +82,45 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
     if (_selectedSymptoms.isEmpty) return 'Take care of yourself today.';
     return _motivations[_selectedSymptoms.first] ?? 'You are doing great. Keep going!';
   }
-  void _saveLog() {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() =>
+        Provider.of<SymptomLogProvider>(context, listen: false).fetchLogs());
+  }
+
+  void _saveLog() async {
     if (_selectedSymptoms.isEmpty ||
         _selectedMood.isEmpty ||
-        _selectedDate == null ||
         _painLevel == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Please select at least one symptom, mood, date and pain level'),
+          content: Text('Please select at least one symptom, mood, and pain level'),
           backgroundColor: Colors.red,
         ),
       );
       return;
     }
 
-    _updateSuggestions(); // Ensure remedies/medications are updated
+    _updateSuggestions();
 
     final log = SymptomLog(
+      id: '', // Firestore will assign
       date: _selectedDate,
       symptoms: List.from(_selectedSymptoms),
       mood: List.from(_selectedMood),
       painLevel: _painLevel,
-     // medications: List.from(_suggestedMedications),
       remedies: List.from(_suggestedRemedies),
       motivation: _getMotivation(),
     );
 
-    Provider.of<SymptomLogProvider>(context, listen: false).addLog(log);
+    await Provider.of<SymptomLogProvider>(context, listen: false).addLog(log);
 
     setState(() {
       _selectedSymptoms.clear();
       _selectedMood.clear();
       _painLevel = 0;
       _suggestedRemedies.clear();
-    //  _suggestedMedications.clear();
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -125,6 +130,7 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
       ),
     );
   }
+
 
   // void _saveLog() {
   //   _updateSuggestions(); // Ensure remedies/medications are updated
@@ -152,6 +158,7 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final appColor = Theme.of(context).colorScheme;
     final logs = Provider.of<SymptomLogProvider>(context).logs;
     return Scaffold(
       appBar: AppBar(title: Text('Symptom Log')),
@@ -271,23 +278,61 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
               SizedBox(height: 24),
               if (logs.isNotEmpty)
                 ...logs.map((log) => Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(
+                      color: appColor.primary.withOpacity(0.5),
+                      width: 1,
+                    ),
+                  ),
                   margin: EdgeInsets.only(bottom: 12),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Column(
+                  child: ListTile(
+                    contentPadding: EdgeInsets.all(12),
+                    title: Text(
+                      DateFormat('yMMMd').format(log.date),
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(DateFormat('yMMMd').format(log.date),
-                            style: TextStyle(fontWeight: FontWeight.bold)),
                         Text('Symptoms: ${log.symptoms.join(', ')}'),
                         Text('Mood: ${log.mood.join(', ')}'),
                         Text('Pain Level: ${log.painLevel}'),
                         Text('Remedies: ${log.remedies.join(', ')}'),
-                       // Text('Medications: ${log.medications.join(', ')}'),
-                        SizedBox(height: 8),
-                        Text('Motivation: ${log.motivation}',
-                            style: TextStyle(fontStyle: FontStyle.italic)),
+                        SizedBox(height: 6),
+                        Text(
+                          'Motivation: ${log.motivation}',
+                          style: TextStyle(fontStyle: FontStyle.italic),
+                        ),
                       ],
+                    ),
+                    trailing: IconButton(
+                      icon: Icon(Icons.delete, color: Colors.red),
+                      onPressed: () async {
+                        final provider = Provider.of<SymptomLogProvider>(
+                          context,
+                          listen: false,
+                        );
+
+                        // keep a reference before deleting
+                        final deletedLog = log;
+
+                        await provider.removeLog(log.id);
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Log deleted"),
+                            backgroundColor: Colors.red,
+                            action: SnackBarAction(
+                              label: "Undo",
+                              textColor: Colors.white,
+                              onPressed: () async {
+                                await provider.addLog(deletedLog); // restore
+                              },
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ))
