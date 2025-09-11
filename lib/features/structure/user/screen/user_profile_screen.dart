@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -90,19 +91,31 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     }
   }
 
-  void _saveProfile() {
+  Future<void> _saveProfile() async {
     final name = _nameController.text;
     final age = int.tryParse(_ageController.text);
     final cycleLength = int.tryParse(_cycleLengthController.text);
 
     if (name.isNotEmpty && age != null && cycleLength != null && _lastPeriodDate != null) {
-      Provider.of<UserProfileProvider>(context, listen: false).saveUserProfile(
-        name,
-        age,
-        cycleLength,
-        _lastPeriodDate!,
-      );
-      Navigator.pushNamed(context, '/home');
+      try {
+        await Provider.of<UserProfileProvider>(context, listen: false).saveUserProfile(
+          name,
+          age,
+          cycleLength,
+          _lastPeriodDate!,
+        );
+
+        // Success feedback
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Profile saved successfully ✅"), backgroundColor: Theme.of(context).colorScheme.primary,),
+        );
+
+        Navigator.pushNamed(context, '/home');
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to save profile: $e"), backgroundColor: Theme.of(context).colorScheme.error),
+        );
+      }
     } else {
       showDialog(
         context: context,
@@ -120,9 +133,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
     final appStrings = AppStrings();
+    final user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
       appBar: AppBar(
@@ -148,20 +163,34 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               style: AppTextStyles.smallTextRegular(context),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
+
+            // 🔑 Show login reminder if user not logged in
+            if (user == null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 20),
+                child: Text(
+                  "Login to access your profile across devices.",
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+
             CustomTextField(
               hintText: appStrings.completeProfileNameText,
               controller: _nameController,
               isOptionalLeadingIcon: false,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
+
             CustomTextField(
               hintText: appStrings.completeProfileAgeText,
               controller: _ageController,
               inputType: TextInputType.number,
               isOptionalLeadingIcon: false,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
+
             CustomTextField(
               hintText: appStrings.completeProfileAverageCycleText,
               controller: _cycleLengthController,
@@ -169,7 +198,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               onChanged: (_) => _updatePrediction(),
               isOptionalLeadingIcon: false,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
+
             CustomTextField(
               hintText: appStrings.completeProfileLastPeriodText,
               controller: _lastPeriodController,
@@ -177,38 +207,38 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               onTap: () => _selectDate(context),
               isOptionalLeadingIcon: false,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
 
             if (_cycleDay != null)
               Text(
                 "You are on Day $_cycleDay of your cycle",
-                style: TextStyle(fontWeight: FontWeight.w600, color: Colors.teal),
+                style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.teal),
               ),
 
             if (_daysToNextPeriod != null)
               Text(
                 "Next period in $_daysToNextPeriod days",
-                style: TextStyle(fontWeight: FontWeight.w600, color: Colors.purple),
+                style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.purple),
               ),
 
             if (_predictedNextPeriod != null)
               Text(
                 "${appStrings.completeProfileNextPeriodIsText} ${DateFormat('MMMM d, yyyy').format(_predictedNextPeriod!)}",
-                style: TextStyle(fontWeight: FontWeight.w600, color: Colors.purple),
+                style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.purple),
               ),
 
             if (_predictedOvulation != null)
               Text(
                 "${appStrings.completeProfileEstimatedOvulationText} ${DateFormat('MMMM d, yyyy').format(_predictedOvulation!)}",
-                style: TextStyle(fontWeight: FontWeight.w600, color: Colors.green),
+                style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.green),
               ),
 
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             LongCustomButton(
               onTap: _saveProfile,
               title: appStrings.saveProfileBtnText,
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Text(
               appStrings.completeProfileWeValueText,
               style: AppTextStyles.smallTextRegular(context),
@@ -219,4 +249,5 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       ),
     );
   }
+
 }

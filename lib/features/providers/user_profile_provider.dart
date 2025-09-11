@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../db/db_helper.dart'; // Assuming this is where you handle DB operations
-import '../models/user_profilel.dart'; // Import your UserProfileModel
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+import '../models/user_profilel.dart';
 
 class UserProfileProvider with ChangeNotifier {
   UserProfileModel? _userProfile;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   UserProfileModel? get userProfile => _userProfile;
 
-  // Load the user profile from the database
+  /// Load the profile from local storage first,
+  /// then try to sync with Firebase if logged in.
   Future<void> loadUserProfile() async {
     final prefs = await SharedPreferences.getInstance();
 
@@ -29,36 +34,48 @@ class UserProfileProvider with ChangeNotifier {
         predictedOvulation: ovulationString != null ? DateTime.parse(ovulationString) : null,
       );
     } else {
-      _userProfile = null; // Clear if missing
+      _userProfile = null;
     }
 
-    notifyListeners(); // Always notify listeners even if values haven't changed
+    notifyListeners();
+
+    // 🔄 If user is logged in, try to fetch from Firestore
+    final user = _auth.currentUser;
+    if (user != null) {
+      final doc = await _firestore.collection('users').doc(user.uid).get();
+      if (doc.exists) {
+        final data = doc.data()!;
+        final fetchedProfile = UserProfileModel(
+          name: data['name'],
+          age: data['age'],
+          cycleLength: data['cycleLength'],
+          lastPeriodDate: DateTime.parse(data['lastPeriodDate']),
+          predictedNextPeriod: data['predictedNextPeriod'] != null
+              ? DateTime.parse(data['predictedNextPeriod'])
+              : null,
+          predictedOvulation: data['predictedOvulation'] != null
+              ? DateTime.parse(data['predictedOvulation'])
+              : null,
+        );
+
+        _userProfile = fetchedProfile;
+        await _saveToPrefs(fetchedProfile); // keep local copy updated
+        notifyListeners();
+      }
+    }
   }
 
-
-  // Save the user profile to the database and update the local state
+  /// Save the profile locally and push to Firebase if logged in
   Future<void> saveUserProfile(
       String name,
       int age,
       int cycleLength,
       DateTime lastPeriodDate,
       ) async {
-    final prefs = await SharedPreferences.getInstance();
-
-    // Calculate predictions
     final predictedNextPeriod = lastPeriodDate.add(Duration(days: cycleLength));
     final predictedOvulation = lastPeriodDate.add(Duration(days: (cycleLength / 2).round()));
 
-    // Save or overwrite all fields
-    await prefs.setString('user_name', name);
-    await prefs.setInt('user_age', age);
-    await prefs.setInt('user_cycle_length', cycleLength);
-    await prefs.setString('user_last_period', lastPeriodDate.toIso8601String());
-    await prefs.setString('user_predicted_next_period', predictedNextPeriod.toIso8601String());
-    await prefs.setString('user_predicted_ovulation', predictedOvulation.toIso8601String());
-
-    // Update the provider state
-    _userProfile = UserProfileModel(
+    final profile = UserProfileModel(
       name: name,
       age: age,
       cycleLength: cycleLength,
@@ -67,8 +84,34 @@ class UserProfileProvider with ChangeNotifier {
       predictedOvulation: predictedOvulation,
     );
 
+    _userProfile = profile;
     notifyListeners();
+
+    // Save locally
+    await _saveToPrefs(profile);
+
+    // Push to Firestore if logged in
+    final user = _auth.currentUser;
+    if (user != null) {
+      await _firestore.collection('users_profile').doc(user.uid).set({
+        'name': profile.name,
+        'age': profile.age,
+        'cycleLength': profile.cycleLength,
+        'lastPeriodDate': profile.lastPeriodDate.toIso8601String(),
+        'predictedNextPeriod': profile.predictedNextPeriod?.toIso8601String(),
+        'predictedOvulation': profile.predictedOvulation?.toIso8601String(),
+      }, SetOptions(merge: true));
+    }
   }
 
+  /// Helper to persist locally
+  Future<void> _saveToPrefs(UserProfileModel profile) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_name', profile.name);
+    await prefs.setInt('user_age', profile.age);
+    await prefs.setInt('user_cycle_length', profile.cycleLength);
+    await prefs.setString('user_last_period', profile.lastPeriodDate.toIso8601String());
+    await prefs.setString('user_predicted_next_period', profile.predictedNextPeriod!.toIso8601String());
+    await prefs.setString('user_predicted_ovulation', profile.predictedOvulation!.toIso8601String());
+  }
 }
-

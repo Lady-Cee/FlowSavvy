@@ -48,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     await authProvider.logout();
     final prefs = await SharedPreferences.getInstance();
-    Navigator.pushReplacementNamed(context, '/login');
+    Navigator.pushReplacementNamed(context, 'loginSignUpScreen');
   }
 
   @override
@@ -75,7 +75,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             padding: const EdgeInsets.only(right: 24),
             child: CircleAvatar(
               child: IconButton(
-                onPressed: () {},
+                onPressed: () => logout(context),
                 icon: const Icon(Icons.person),
               ),
             ),
