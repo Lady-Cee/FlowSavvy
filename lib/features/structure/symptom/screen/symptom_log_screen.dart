@@ -152,6 +152,7 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final appColor = Theme.of(context).colorScheme;
     final logs = Provider.of<SymptomLogProvider>(context).logs;
     return Scaffold(
       appBar: AppBar(title: Text('Symptom Log')),
@@ -271,6 +272,13 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
               SizedBox(height: 24),
               if (logs.isNotEmpty)
                 ...logs.map((log) => Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(
+                      color: appColor.primary.withOpacity(0.5),
+                      width: 1,
+                    ),
+                  ),
                   margin: EdgeInsets.only(bottom: 12),
                   child: Padding(
                     padding: const EdgeInsets.all(12.0),
