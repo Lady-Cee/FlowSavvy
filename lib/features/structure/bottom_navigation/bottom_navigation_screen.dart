@@ -1,10 +1,12 @@
 import 'package:flow_savvy/features/structure/educational/screen/educational_resource_screen.dart';
 import 'package:flow_savvy/features/structure/home/screen/home_screen.dart';
-import 'package:flow_savvy/features/structure/period/screen/period_log_screen.dart';
+// import 'package:flow_savvy/features/structure/period/screen/period_log_screen.dart';
 import 'package:flow_savvy/features/structure/support/screen/community_support_screen.dart';
-import 'package:flow_savvy/features/structure/symptom/screen/symptom_log_screen.dart';
-import 'package:flow_savvy/features/structure/user/screen/user_profile_screen.dart';
+//import 'package:flow_savvy/features/structure/symptom/screen/symptom_log_screen.dart';
+//import 'package:flow_savvy/features/structure/user/screen/user_profile_screen.dart';
 import 'package:flutter/material.dart';
+
+import '../period_matters/period_matters_screen.dart';
 
 class BottomNavigationScreen extends StatefulWidget {
   @override
@@ -16,11 +18,12 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
 
   final List<Widget> _screens = [
     HomeScreen(),
-    SymptomLogScreen(),
+    PeriodMattersScreen(),
+    //SymptomLogScreen(),
     EducationalResourceScreen(),
-    UserProfileScreen(),
-    PeriodLogScreen(),
-    CommunitySupportScreen()
+    //UserProfileScreen(),
+    //PeriodLogScreen(),
+    CommunitySupportScreen(),
   ];
 
   @override
@@ -36,7 +39,7 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
             _currentIndex = newIndex;
           });
         },
-        type: BottomNavigationBarType.shifting, // Needed for 5 items
+        type: BottomNavigationBarType.fixed, // Needed for 5 items
         backgroundColor: color.surface, // background color
         selectedItemColor: color.primary, // selected icon & text color
         unselectedItemColor: color.inversePrimary, // unselected icon & text color
@@ -47,24 +50,25 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.sign_language),
-            label: 'Symptom Log',
+            icon: Icon(Icons.water_drop),
+            label: 'PeriodMatters',
           ),
+          // BottomNavigationBarItem(
+          //   icon: Icon(Icons.sign_language),
+          //   label: 'Symptom Log',
+          // ),
           BottomNavigationBarItem(
             icon: Icon(Icons.menu_book_outlined),
             label: 'Educational',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.water_drop),
-            label: 'PeriodLog',
-          ),
+          // BottomNavigationBarItem(
+          //   icon: Icon(Icons.person),
+          //   label: 'Profile',
+          // ),
+
           BottomNavigationBarItem(
             icon: Icon(Icons.people),
-            label: 'Community Support',
+            label: 'Support',
           ),
         ],
       ),
