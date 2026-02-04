@@ -1,6 +1,6 @@
-# FlowSavvy 🩸💡
+# PeriodReal (former FlowSavvy) 🩸💡
 
-**FlowSavvy** is a smart menstrual hygiene assistant app built with Flutter. It empowers users—especially women and girls—to ask health-related questions around menstrual hygiene and get reliable answers powered by Google's **Gemini AI**.
+**PeriodReal (former FlowSavvy)** is a smart menstrual hygiene assistant app built with Flutter. It empowers users—especially women and girls—to ask health-related questions around menstrual hygiene and get reliable answers powered by Google's **Gemini AI**.
 
 ---
 
