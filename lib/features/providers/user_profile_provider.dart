@@ -12,8 +12,7 @@ class UserProfileProvider with ChangeNotifier {
 
   UserProfileModel? get userProfile => _userProfile;
 
-  /// Load the profile from local storage first,
-  /// then try to sync with Firebase if logged in.
+  /// 🔄 Ensure predictions are always recalculated when loading
   Future<void> loadUserProfile() async {
     final prefs = await SharedPreferences.getInstance();
 
@@ -21,76 +20,67 @@ class UserProfileProvider with ChangeNotifier {
     final age = prefs.getInt('user_age');
     final cycleLength = prefs.getInt('user_cycle_length');
     final lastPeriodString = prefs.getString('user_last_period');
-    final nextPeriodString = prefs.getString('user_predicted_next_period');
-    final ovulationString = prefs.getString('user_predicted_ovulation');
 
     if (name != null && age != null && cycleLength != null && lastPeriodString != null) {
-      _userProfile = UserProfileModel(
+      final lastPeriod = DateTime.parse(lastPeriodString);
+
+      // 🔑 Always recalc predictions when loading
+      final updatedProfile = _calculatePredictions(
         name: name,
         age: age,
         cycleLength: cycleLength,
-        lastPeriodDate: DateTime.parse(lastPeriodString),
-        predictedNextPeriod: nextPeriodString != null ? DateTime.parse(nextPeriodString) : null,
-        predictedOvulation: ovulationString != null ? DateTime.parse(ovulationString) : null,
+        lastPeriod: lastPeriod,
       );
+
+      _userProfile = updatedProfile;
+      await _saveToPrefs(updatedProfile);
     } else {
       _userProfile = null;
     }
 
     notifyListeners();
 
-    // 🔄 If user is logged in, try to fetch from Firestore
+    // 🔄 Sync with Firestore if logged in
     final user = _auth.currentUser;
     if (user != null) {
-      final doc = await _firestore.collection('users').doc(user.uid).get();
+      final doc = await _firestore.collection('users_profile').doc(user.uid).get();
       if (doc.exists) {
         final data = doc.data()!;
-        final fetchedProfile = UserProfileModel(
+        final lastPeriod = DateTime.parse(data['lastPeriodDate']);
+
+        final updatedProfile = _calculatePredictions(
           name: data['name'],
           age: data['age'],
           cycleLength: data['cycleLength'],
-          lastPeriodDate: DateTime.parse(data['lastPeriodDate']),
-          predictedNextPeriod: data['predictedNextPeriod'] != null
-              ? DateTime.parse(data['predictedNextPeriod'])
-              : null,
-          predictedOvulation: data['predictedOvulation'] != null
-              ? DateTime.parse(data['predictedOvulation'])
-              : null,
+          lastPeriod: lastPeriod,
         );
 
-        _userProfile = fetchedProfile;
-        await _saveToPrefs(fetchedProfile); // keep local copy updated
+        _userProfile = updatedProfile;
+        await _saveToPrefs(updatedProfile);
         notifyListeners();
       }
     }
   }
 
-  /// Save the profile locally and push to Firebase if logged in
+  /// Save the profile
   Future<void> saveUserProfile(
       String name,
       int age,
       int cycleLength,
       DateTime lastPeriodDate,
       ) async {
-    final predictedNextPeriod = lastPeriodDate.add(Duration(days: cycleLength));
-    final predictedOvulation = lastPeriodDate.add(Duration(days: (cycleLength / 2).round()));
-
-    final profile = UserProfileModel(
+    final profile = _calculatePredictions(
       name: name,
       age: age,
       cycleLength: cycleLength,
-      lastPeriodDate: lastPeriodDate,
-      predictedNextPeriod: predictedNextPeriod,
-      predictedOvulation: predictedOvulation,
+      lastPeriod: lastPeriodDate,
     );
 
     _userProfile = profile;
     notifyListeners();
 
-    // Save locally
     await _saveToPrefs(profile);
 
-    // Push to Firestore if logged in
     final user = _auth.currentUser;
     if (user != null) {
       await _firestore.collection('users_profile').doc(user.uid).set({
@@ -104,7 +94,32 @@ class UserProfileProvider with ChangeNotifier {
     }
   }
 
-  /// Helper to persist locally
+  /// 🔮 Core calculation logic
+  UserProfileModel _calculatePredictions({
+    required String name,
+    required int age,
+    required int cycleLength,
+    required DateTime lastPeriod,
+  }) {
+    final now = DateTime.now();
+    final daysSinceLast = now.difference(lastPeriod).inDays;
+    final cyclesPassed = (daysSinceLast / cycleLength).floor();
+
+    // shift last period forward to the most recent cycle
+    final updatedLastPeriod = lastPeriod.add(Duration(days: cyclesPassed * cycleLength));
+    final nextPeriod = updatedLastPeriod.add(Duration(days: cycleLength));
+    final ovulationDate = updatedLastPeriod.add(Duration(days: (cycleLength / 2).round()));
+
+    return UserProfileModel(
+      name: name,
+      age: age,
+      cycleLength: cycleLength,
+      lastPeriodDate: updatedLastPeriod,
+      predictedNextPeriod: nextPeriod,
+      predictedOvulation: ovulationDate,
+    );
+  }
+
   Future<void> _saveToPrefs(UserProfileModel profile) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('user_name', profile.name);
