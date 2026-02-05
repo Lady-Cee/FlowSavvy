@@ -12,10 +12,12 @@ import 'package:flow_savvy/features/structure/home/screen/home_screen.dart';
 import 'package:flow_savvy/features/structure/home/screen/test_screen.dart';
 import 'package:flow_savvy/features/structure/menopause/menopause_screen.dart';
 import 'package:flow_savvy/features/structure/onboarding/onboarding_screens.dart';
-import 'package:flow_savvy/features/structure/period/screen/period_log_screen.dart';
+import 'package:flow_savvy/features/structure/period_matters/period/screen/period_log_screen.dart';
+import 'package:flow_savvy/features/structure/period_matters/period_matters_screen.dart';
+//import 'package:flow_savvy/features/structure/period/screen/period_log_screen.dart';
 import 'package:flow_savvy/features/structure/support/screen/community_support_screen.dart';
-import 'package:flow_savvy/features/structure/symptom/screen/symptom_log_screen.dart';
-import 'package:flow_savvy/features/structure/user/screen/user_profile_screen.dart';
+// import 'package:flow_savvy/features/structure/symptom/screen/symptom_log_screen.dart';
+//import 'package:flow_savvy/features/structure/user/screen/user_profile_screen.dart';
 import 'package:flow_savvy/features/theme/app_theme.dart';
 
 import 'package:flutter/material.dart';import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -38,6 +40,8 @@ import 'features/services/firebase_auth_services.dart';
 import 'features/services/splash_service.dart';
 import 'features/structure/bottom_navigation/bottom_navigation_screen.dart';
 import 'features/structure/home/screen/profile_complete_screen.dart';
+import 'features/structure/period_matters/symptom/screen/symptom_log_screen.dart';
+import 'features/structure/period_matters/user/screen/user_profile_screen.dart';
 import 'features/structure/product/screen/product_screen.dart';
 import 'features/structure/splash/splash_screen.dart';
 import 'features/structure/support/screen/community_admin_screen.dart';
@@ -127,6 +131,7 @@ class MyApp extends StatelessWidget {
           '/test': (_) => TestScreen(),
           '/home': (_) => BottomNavigationScreen(),
           '/onboarding': (_) => OnboardingScreen(),
+          '/periodMatters': (_) => PeriodMattersScreen(),
           '/periodLog': (_) => PeriodLogScreen(),
           '/symptomLog': (_) => SymptomLogScreen(),
           '/educational': (_) => EducationalResourceScreen(),

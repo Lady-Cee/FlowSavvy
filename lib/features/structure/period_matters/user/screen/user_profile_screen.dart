@@ -2,11 +2,17 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../../../providers/user_profile_provider.dart';
-import '../../../utils/app_strings.dart';
-import '../../../utils/app_text_styles.dart';
-import '../../../widgets/custom_text_field.dart';
-import '../../../widgets/long_custom_button.dart';
+
+import '../../../../providers/user_profile_provider.dart';
+import '../../../../utils/app_strings.dart';
+import '../../../../utils/app_text_styles.dart';
+import '../../../../widgets/custom_text_field.dart';
+import '../../../../widgets/long_custom_button.dart';
+// import '../../../providers/user_profile_provider.dart';
+// import '../../../utils/app_strings.dart';
+// import '../../../utils/app_text_styles.dart';
+// import '../../../widgets/custom_text_field.dart';
+// import '../../../widgets/long_custom_button.dart';
 
 class UserProfileScreen extends StatefulWidget {
   @override

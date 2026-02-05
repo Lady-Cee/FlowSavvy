@@ -2,10 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import '../../../models/period_log.dart';
-import '../../../providers/period_log_provider.dart';
-import '../../../utils/app_text_styles.dart';
-import '../../../widgets/long_custom_button.dart';
+import '../../../../models/period_log.dart';
+import '../../../../providers/period_log_provider.dart';
+import '../../../../utils/app_text_styles.dart';
+import '../../../../widgets/long_custom_button.dart';
+
+// import '../../../models/period_log.dart';
+// import '../../../providers/period_log_provider.dart';
+// import '../../../utils/app_text_styles.dart';
+// import '../../../widgets/long_custom_button.dart';
 
 class PeriodLogScreen extends StatefulWidget {
   @override
@@ -124,7 +129,7 @@ class _PeriodLogScreenState extends State<PeriodLogScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Center(
-          child: Text("Log Your Period",
+          child: Text("Track Your Period",
               style: AppTextStyles.largeTextSemiBold(context)),
         ),
       ),
