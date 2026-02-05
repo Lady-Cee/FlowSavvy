@@ -76,7 +76,7 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
     final meds = <String>{};
     for (var symptom in _selectedSymptoms) {
       remedies.addAll(_remedySuggestions[symptom] ?? []);
-     // meds.addAll(_medicationSuggestions[symptom] ?? []);
+      // meds.addAll(_medicationSuggestions[symptom] ?? []);
     }
     _suggestedRemedies = remedies.toList();
     //_suggestedMedications = meds.toList();
@@ -190,7 +190,7 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
                 },
                 child: InputDecorator(
                   decoration: InputDecoration(
-                   // labelText: DateFormat('yyyy-MM-dd').format(_selectedDate),
+                    // labelText: DateFormat('yyyy-MM-dd').format(_selectedDate),
                     border: OutlineInputBorder(),
                   ),
                   child: Text(DateFormat('yyyy-MM-dd').format(_selectedDate)),
