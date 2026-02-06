@@ -155,27 +155,65 @@ class PeriodMattersScreen extends StatefulWidget {
 class _PeriodMattersScreenState extends State<PeriodMattersScreen> {
   int selectedIndex = -1;
 
-  // Function to open URL in external browser
+  // Function to open URL - FIXED VERSION
   Future<void> _openUrl(String url) async {
     final Uri uri = Uri.parse(url);
     try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Could not open the form'),
-              backgroundColor: Colors.red,
-            ),
-          );
+      // Try different launch modes
+      bool launched = false;
+
+      // Try external application first
+      try {
+        launched = await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        );
+      } catch (e) {
+        print('External app launch failed: $e');
+      }
+
+      // If external didn't work, try platform default
+      if (!launched) {
+        try {
+          launched = await launchUrl(uri);
+        } catch (e) {
+          print('Platform default launch failed: $e');
         }
       }
+
+      // If still not launched, try in-app browser
+      if (!launched) {
+        try {
+          launched = await launchUrl(
+            uri,
+            mode: LaunchMode.inAppWebView,
+          );
+        } catch (e) {
+          print('In-app web view launch failed: $e');
+        }
+      }
+
+      if (!launched && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not open the form. Please check your internet connection.'),
+            backgroundColor: Colors.red,
+            action: SnackBarAction(
+              label: 'Copy Link',
+              textColor: Colors.white,
+              onPressed: () {
+                // You can add clipboard functionality here if needed
+              },
+            ),
+          ),
+        );
+      }
     } catch (e) {
+      print('Error launching URL: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error opening form: $e'),
+            content: Text('Error: ${e.toString()}'),
             backgroundColor: Colors.red,
           ),
         );
@@ -204,10 +242,10 @@ class _PeriodMattersScreenState extends State<PeriodMattersScreen> {
       'screen': UserProfileScreen(),
     },
     {
-      'title': 'Feedback Form',
+      'title': 'Pad Request Form',
       'icon': Icons.assignment_outlined,
       'type': 'url',
-      'url': 'https://forms.gle/nZYx7X6gjNgrgm1X6', // Replace with your actual form URL
+      'url': 'https://forms.gle/nZYx7X6gjNgrgm1X6', // Pad request form url
     },
   ];
 
