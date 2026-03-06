@@ -15,11 +15,26 @@ class PeriodLog {
     this.cycleLength,
   });
 
+  /// Returns month + year label (e.g., "April 2026")
   String get monthLabel => DateFormat('MMMM yyyy').format(startDate);
+
+  /// Returns just the month (e.g., "April")
   String get month => DateFormat('MMMM').format(startDate);
 
-  // ✅ Convert to Map for Firestore & SharedPreferences
-  Map<String, dynamic> toMap() {
+  /// ✅ Convert log to Map for Firestore
+  Map<String, dynamic> toMap({String? uid}) {
+    return {
+      if (uid != null) 'uid': uid, // associate with current user
+      'startDate': startDate.toIso8601String(),
+      'endDate': endDate.toIso8601String(),
+      'flowIntensity': flowIntensity,
+      'note': note,
+      'cycleLength': cycleLength,
+    };
+  }
+
+  /// ✅ Convert log to Map for offline caching (no UID needed)
+  Map<String, dynamic> toMapOffline() {
     return {
       'startDate': startDate.toIso8601String(),
       'endDate': endDate.toIso8601String(),
@@ -29,7 +44,7 @@ class PeriodLog {
     };
   }
 
-  // ✅ Create from Map
+  /// ✅ Create PeriodLog from Map (Firestore or SharedPreferences)
   factory PeriodLog.fromMap(Map<String, dynamic> map) {
     return PeriodLog(
       startDate: DateTime.parse(map['startDate']),
@@ -40,48 +55,3 @@ class PeriodLog {
     );
   }
 }
-
-
-
-// import 'package:intl/intl.dart';
-//
-// class PeriodLog {
-//   final DateTime startDate;
-//   final DateTime endDate;
-//   final String flowIntensity;
-//   final String? note;
-//
-//   PeriodLog({
-//     required this.startDate,
-//     required this.endDate,
-//     required this.flowIntensity,
-//     this.note,
-//   });
-//
-//   String get monthLabel => DateFormat('MMMM yyyy').format(startDate);
-//   String get month => DateFormat('MMMM').format(startDate);
-// }
-//
-//
-// // import 'package:intl/intl.dart';
-// //
-// // class PeriodLog {
-// //   final DateTime startDate;
-// //   final DateTime endDate;
-// //   final String flowIntensity;
-// //   final String? note;
-// //
-// //   PeriodLog({
-// //     required this.startDate,
-// //     required this.endDate,
-// //     required this.flowIntensity,
-// //     this.note,
-// //   });
-// //
-// //   /// This returns the month and year of the start date (e.g., "April 2025")
-// //   String get monthLabel => DateFormat('MMMM yyyy').format(startDate);
-// //
-// //   /// This returns just the month (e.g., "April")
-// //   String get month => DateFormat('MMMM').format(startDate);
-// // }
-// //

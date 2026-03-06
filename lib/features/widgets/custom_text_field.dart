@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 class CustomTextField extends StatefulWidget {
   final String hintText;
+  final String? textFieldLabel;
   final TextEditingController controller;
   final IconData? optionalLeadingIcon;
   final IconData? optionalTrailingIcon;
@@ -19,6 +20,7 @@ class CustomTextField extends StatefulWidget {
   const CustomTextField(
       {super.key,
       required this.hintText,
+        this.textFieldLabel,
       required this.controller,
       this.optionalLeadingIcon,
       this.optionalTrailingIcon,
@@ -57,6 +59,9 @@ class _CustomTextFieldState extends State<CustomTextField> {
         controller: widget.controller,
         decoration: InputDecoration(
           hintText: widget.hintText,
+            label: (widget.textFieldLabel != null && widget.textFieldLabel!.isNotEmpty)
+                ? Text(widget.textFieldLabel!)
+                : null,
           hintStyle: AppTextStyles.smallTextRegular(context),
           prefixIcon: Icon(widget.isOptionalLeadingIcon ? widget.optionalLeadingIcon : null, color: Colors.black, size: 16,),
           suffixIcon: widget.isObscure ? GestureDetector(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
@@ -90,14 +91,14 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
   void initState() {
     super.initState();
     Future.microtask(() =>
-        Provider.of<SymptomLogProvider>(context, listen: false).fetchLogs());
+        Provider.of<SymptomLogProvider>(context as BuildContext, listen: false).fetchLogs());
   }
 
   void _saveLog() async {
     if (_selectedSymptoms.isEmpty ||
         _selectedMood.isEmpty ||
         _painLevel == 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(context as BuildContext).showSnackBar(
         SnackBar(
           content: Text('Please select at least one symptom, mood, and pain level'),
           backgroundColor: Colors.red,
@@ -118,7 +119,7 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
       motivation: _getMotivation(),
     );
 
-    await Provider.of<SymptomLogProvider>(context, listen: false).addLog(log);
+    await Provider.of<SymptomLogProvider>(context as BuildContext, listen: false).addLog(log);
 
     setState(() {
       _selectedSymptoms.clear();
@@ -127,7 +128,7 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
       _suggestedRemedies.clear();
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
+    ScaffoldMessenger.of(context as BuildContext).showSnackBar(
       SnackBar(
         content: Text('Symptom log saved successfully.'),
         backgroundColor: Colors.green,

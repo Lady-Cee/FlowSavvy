@@ -6,9 +6,10 @@ import 'package:flow_savvy/features/widgets/long_custom_button.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../providers/auth_provider.dart';
+import '../../../providers/symptom_log_provider.dart';
 import '../../../providers/user_profile_provider.dart';
 import '../../../utils/get_date_formatter.dart';
 import 'dart:math';
@@ -46,8 +47,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   void logout(BuildContext context) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
     await authProvider.logout();
-    final prefs = await SharedPreferences.getInstance();
+
+    // 🔹 Clear provider memory
+    Provider.of<UserProfileProvider>(context, listen: false).resetProfile();
+    Provider.of<SymptomLogProvider>(context, listen: false).resetLogs();
+
     Navigator.pushReplacementNamed(context, 'loginSignUpScreen');
   }
 
@@ -56,6 +62,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     final profile = Provider.of<UserProfileProvider>(context).userProfile;
     final bool hasProfile = profile != null;
     final username = (profile?.name.split(' ').first.toLowerCase()) ?? 'user';
+    final phase = context.read<UserProfileProvider>().getCyclePhase();
+    final fertileStart = context.read<UserProfileProvider>().fertileWindowStart;
+    final fertileEnd = context.read<UserProfileProvider>().fertileWindowEnd;
 
     return Scaffold(
       appBar: AppBar(
@@ -112,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               final predictedNextPeriod = profile.predictedNextPeriod;
               final lastPeriodDate = profile.lastPeriodDate;
               final cycleLength = profile.cycleLength;
-              final predictedOvulation = lastPeriodDate.add(const Duration(days: 14));
+              final predictedOvulation = profile.predictedOvulation;
 
               final formattedNextPeriod = (predictedNextPeriod != null)
                   ? DateFormat('MMM dd').format(predictedNextPeriod)
@@ -146,17 +155,37 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       child: ListTile(
                         title: Text(_getCycleDayText(lastPeriodDate, cycleLength), style: AppTextStyles.smallTextRegular(context)),
-                        subtitle: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.favorite, color: color.primary, size: 16),
-                            const SizedBox(width: 4),
-                            Text(
-                              _getOvulationCountdown(predictedOvulation, today),
-                              style: AppTextStyles.smallTextRegular(context).copyWith(fontSize: 12),
-                            ),
-                          ],
-                        ),
+                          subtitle: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.favorite, color: color.primary, size: 16),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    _getOvulationCountdown(predictedOvulation!, today),
+                                    style: AppTextStyles.smallTextRegular(context).copyWith(fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 5),
+                              if (profile.age >= 23) ...[
+                                Text(
+                                  'Phase: $phase',
+                                  style: AppTextStyles.smallTextRegular(context)
+                                      .copyWith(fontSize: 12, fontWeight: FontWeight.w600),
+                                ),
+                                if (fertileStart != null && fertileEnd != null)
+                                  Text(
+                                    'Fertile Window: ${DateFormat('MMM d').format(fertileStart)} - ${DateFormat('MMM d').format(fertileEnd)}',
+                                    style: AppTextStyles.smallTextRegular(context)
+                                        .copyWith(fontSize: 12, fontWeight: FontWeight.w600),
+                                  ),
+                              ],
+                            ],
+                          )
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -279,7 +308,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   String _getCycleDayText(DateTime lastPeriod, int cycleLen) {
-    final dayOfCycle = DateTime.now().difference(lastPeriod).inDays + 1;
+    final daysSinceLastPeriod = DateTime.now().difference(lastPeriod).inDays;
+    final dayOfCycle = (daysSinceLastPeriod % cycleLen) + 1;
+
     return 'Day $dayOfCycle of $cycleLen-day cycle';
   }
 
