@@ -181,22 +181,37 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   textAlign: TextAlign.center,
                 ),
               ),
-
+Row(
+  mainAxisAlignment: MainAxisAlignment.start,
+  children: [
+    Text(appStrings.completeProfileNameText),
+  ],
+),
             CustomTextField(
               hintText: appStrings.completeProfileNameText,
               controller: _nameController,
               isOptionalLeadingIcon: false,
             ),
-            const SizedBox(height: 20),
-
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Text(appStrings.completeProfileAgeText),
+              ],
+            ),
             CustomTextField(
               hintText: appStrings.completeProfileAgeText,
               controller: _ageController,
               inputType: TextInputType.number,
               isOptionalLeadingIcon: false,
             ),
-            const SizedBox(height: 20),
-
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Text(appStrings.completeProfileAverageCycleText2, overflow: TextOverflow.ellipsis,),
+              ],
+            ),
             CustomTextField(
               hintText: appStrings.completeProfileAverageCycleText,
               controller: _cycleLengthController,
@@ -204,7 +219,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               onChanged: (_) => _updatePrediction(),
               isOptionalLeadingIcon: false,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Text(appStrings.completeProfileLastPeriodText),
+              ],
+            ),
 
             CustomTextField(
               hintText: appStrings.completeProfileLastPeriodText,

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/is_login_state_provider.dart';
+import '../../providers/user_profile_provider.dart';
 import '../../utils/app_text_styles.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/long_custom_button.dart';
@@ -103,6 +104,8 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
     final error = await authProvider.login(email, password);
     setState(() => _isLoading = false);
+    // 🔹 Load the correct user's profile
+    await context.read<UserProfileProvider>().loadUserProfile();
 
     final prefs = await SharedPreferences.getInstance();
 

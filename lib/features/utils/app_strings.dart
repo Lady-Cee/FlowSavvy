@@ -26,7 +26,7 @@ class AppStrings {
         'onboardingHeaderSubTitle3': 'Get trusted answers, connect with others, and \nlearn at your pace',
         'onboardingHeaderTitle4': 'Join a community that cares',
         'onboardingHeaderSubTitle4': 'Trust us to keep you informed, and \nconnected all at once.',
-        'loginHeaderText': 'welcome Back.',
+        'loginHeaderText': 'Welcome Back.',
         'loginSubtitleText': 'Log in to continue your journey.',
         'signupHeaderText': 'Create an Account.',
         'signupSubtitleText': 'Join the PeriodReal community.',
@@ -36,15 +36,16 @@ class AppStrings {
 
         // strings for profile page
         'completeYourProfileText': 'Complete Your Profile',
-        'completeProfileSubTitleText': 'Tell us more about you so we can personalise your experience',
+        'completeProfileSubTitleText': 'Tell us more about you so we can personalise your experience.',
         'completeProfileNameText': 'Name',
         'completeProfileAgeText': 'Age',
         'completeProfileAverageCycleText': 'Average Cycle Length (days) if not sure use 28days',
+        'completeProfileAverageCycleText2': 'Average Cycle Length (days)',
         'completeProfileLastPeriodText': 'Last Period Start Date',
         'completeProfileNextPeriodIsText': 'Your next period is expected on: ',
         'completeProfileEstimatedOvulationText': 'Estimated ovulation day: ',
         'saveProfileBtnText': 'Save Profile',
-        'completeProfileWeValueText': 'We value your privacy. Your information stay secure with us',
+        'completeProfileWeValueText': 'We value your privacy. Your information is secure with us',
 
 
 
@@ -125,6 +126,7 @@ class AppStrings {
   String get completeProfileNameText => _localizedStrings['completeProfileNameText']!;
   String get completeProfileAgeText => _localizedStrings['completeProfileAgeText']!;
   String get completeProfileAverageCycleText => _localizedStrings['completeProfileAverageCycleText']!;
+  String get completeProfileAverageCycleText2 => _localizedStrings['completeProfileAverageCycleText2']!;
   String get completeProfileLastPeriodText => _localizedStrings['completeProfileLastPeriodText']!;
   String get completeProfileNextPeriodIsText => _localizedStrings['completeProfileNextPeriodIsText']!;
   String get completeProfileEstimatedOvulationText => _localizedStrings['completeProfileEstimatedOvulationText']!;
