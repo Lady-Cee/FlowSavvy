@@ -1,41 +1,56 @@
 import 'dart:convert';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/period_log.dart';
 
 class PeriodLogProvider with ChangeNotifier {
   final List<PeriodLog> _logs = [];
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   List<PeriodLog> get logs => [..._logs];
 
-  final _firestore = FirebaseFirestore.instance;
-  final String _prefsKey = "period_logs";
+  /// 🔑 Generate a user-specific SharedPreferences key
+  String _getPrefsKey(String uid) => "${uid}_period_logs";
 
-  /// ✅ Save logs to local cache
-  Future<void> _saveToLocal() async {
-    final prefs = await SharedPreferences.getInstance();
-    final logsJson = _logs.map((log) => jsonEncode(log.toMap())).toList();
-    await prefs.setStringList(_prefsKey, logsJson);
+  /// 🔄 Recalculate cycle length for each log
+  void _recalculateCycles() {
+    for (int i = 0; i < _logs.length; i++) {
+      if (i == 0) {
+        _logs[i].cycleLength = null;
+      } else {
+        _logs[i].cycleLength =
+            _logs[i].startDate.difference(_logs[i - 1].startDate).inDays;
+      }
+    }
   }
 
-  /// ✅ Load logs from local cache
-  Future<void> _loadFromLocal() async {
+  /// 🔄 Load logs from cache and Firestore
+  Future<void> loadLogs() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
     final prefs = await SharedPreferences.getInstance();
-    final logsJson = prefs.getStringList(_prefsKey) ?? [];
+    final key = _getPrefsKey(user.uid);
+
+    // Load from offline cache first
+    final cachedJson = prefs.getStringList(key) ?? [];
     _logs.clear();
-    _logs.addAll(logsJson.map((log) => PeriodLog.fromMap(jsonDecode(log))));
+    _logs.addAll(
+      cachedJson.map((e) => PeriodLog.fromMap(jsonDecode(e))),
+    );
     _recalculateCycles();
     notifyListeners();
-  }
 
-  /// ✅ Load logs (first from cache, then Firestore)
-  Future<void> loadLogs() async {
-    await _loadFromLocal();
-
+    // Load from Firestore
     try {
-      final snapshot = await _firestore.collection('period_log').get();
+      final snapshot = await _firestore
+          .collection('period_log')
+          .where('uid', isEqualTo: user.uid)
+          .get();
+
       final firestoreLogs =
       snapshot.docs.map((doc) => PeriodLog.fromMap(doc.data())).toList();
 
@@ -43,51 +58,49 @@ class PeriodLogProvider with ChangeNotifier {
         _logs.clear();
         _logs.addAll(firestoreLogs);
         _recalculateCycles();
-        await _saveToLocal();
+        await _saveToLocal(user.uid);
         notifyListeners();
       }
     } catch (e) {
-      if (kDebugMode) {
-        print("Error loading Firestore logs: $e");
-      }
+      if (kDebugMode) print("Error loading Firestore logs: $e");
     }
   }
 
-  /// ✅ Add new log
+  /// ✅ Add new log (offline + Firestore)
   Future<void> addLog(PeriodLog log) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
     _logs.add(log);
-
-    // Sort and recalc cycles
-    _logs.sort((a, b) => a.startDate.compareTo(b.startDate));
-    _recalculateCycles();
-    _logs.sort((a, b) => b.startDate.compareTo(a.startDate));
-
+    _sortAndRecalculate();
     notifyListeners();
-    await _saveToLocal();
+    await _saveToLocal(user.uid);
 
-    // Firestore save
     try {
-      await _firestore.collection('period_log').add(log.toMap());
+      await _firestore.collection('period_log').add({
+        'uid': user.uid,
+        ...log.toMap(), // Firestore-ready map
+      });
     } catch (e) {
-      if (kDebugMode) {
-        print("Error saving log to Firestore: $e");
-      }
+      if (kDebugMode) print("Error saving log to Firestore: $e");
     }
   }
 
   /// ✅ Remove log
   Future<void> removeLog(int index) async {
     if (index < 0 || index >= _logs.length) return;
-    final log = _logs[index];
-    _logs.removeAt(index);
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
 
-    _recalculateCycles();
+    final log = _logs.removeAt(index);
+    _sortAndRecalculate();
     notifyListeners();
-    await _saveToLocal();
+    await _saveToLocal(user.uid);
 
     try {
       final snapshot = await _firestore
           .collection('period_log')
+          .where('uid', isEqualTo: user.uid)
           .where('startDate', isEqualTo: log.startDate.toIso8601String())
           .get();
 
@@ -95,78 +108,39 @@ class PeriodLogProvider with ChangeNotifier {
         await doc.reference.delete();
       }
     } catch (e) {
-      if (kDebugMode) {
-        print("Error removing log from Firestore: $e");
-      }
+      if (kDebugMode) print("Error removing log from Firestore: $e");
     }
   }
 
-  /// ✅ Cycle length calculation
-  void _recalculateCycles() {
+  /// ✅ Offline caching
+  Future<void> _saveToLocal(String uid) async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = _getPrefsKey(uid);
+    final logsJson = _logs.map((log) => jsonEncode(log.toMapOffline())).toList();
+    await prefs.setStringList(key, logsJson);
+  }
+
+  /// 🔄 Recalculate cycle length for each log
+  void _sortAndRecalculate() {
+    _logs.sort((a, b) => b.startDate.compareTo(a.startDate)); // newest first
     for (int i = 0; i < _logs.length; i++) {
       if (i == 0) {
         _logs[i].cycleLength = null;
       } else {
-        final prevStart = _logs[i - 1].startDate;
-        final currentStart = _logs[i].startDate;
-        _logs[i].cycleLength = currentStart.difference(prevStart).inDays;
+        _logs[i].cycleLength =
+            _logs[i].startDate.difference(_logs[i - 1].startDate).inDays;
       }
     }
   }
+
+  /// ✅ Reset logs (e.g., on logout)
+  Future<void> resetLogs() async {
+    _logs.clear();
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_getPrefsKey(user.uid));
+    }
+    notifyListeners();
+  }
 }
-
-
-
-// import 'package:flutter/foundation.dart';
-// import '../models/period_log.dart';
-//
-// class PeriodLogProvider with ChangeNotifier {
-//   final List<PeriodLog> _logs = [];
-//
-//   List<PeriodLog> get logs => [..._logs];
-//
-//   void addLog(PeriodLog log) {
-//     _logs.add(log);
-//     _logs.sort((a, b) => b.startDate.compareTo(a.startDate)); // newest first
-//
-//     // After sorting, update cycle length for each except the first (index 0)
-//     for (int i = 1; i < _logs.length; i++) {
-//       _logs[i].cycleLength = _logs[i].startDate.difference(_logs[i - 1].startDate).inDays;
-//     }
-//
-//     notifyListeners();
-//   }
-//
-//
-// // void addLog(PeriodLog log) {
-//   //   _logs.add(log);
-//   //   _logs.sort((a, b) => b.startDate.compareTo(a.startDate));
-//   //   notifyListeners();
-//   // }
-// }
-//
-//
-// // import 'package:flutter/foundation.dart';
-// // import '../models/period_log.dart';
-// //
-// // class PeriodLogProvider with ChangeNotifier {
-// //   final List<PeriodLog> _logs = [];
-// //
-// //   List<PeriodLog> get logs => [..._logs]; // No sorting here; we sort once in addLog()
-// //
-// //   void addLog(PeriodLog log) {
-// //     _logs.add(log);
-// //     _logs.sort((a, b) => b.startDate.compareTo(a.startDate)); // Sort only when adding
-// //     notifyListeners();
-// //   }
-// //
-// //   /// Returns the cycle length in days between the current log and the previous one.
-// //   /// Assumes the logs are already sorted in descending order.
-// //   int? getCycleLengthForLog(int index) {
-// //     // Work with already sorted logs
-// //     if (index == 0 || index >= _logs.length) return null;
-// //     final current = _logs[index];
-// //     final previous = _logs[index - 1];
-// //     return current.startDate.difference(previous.startDate).inDays;
-// //   }
-// // }

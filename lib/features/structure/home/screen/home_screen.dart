@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 // import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../providers/auth_provider.dart';
+import '../../../providers/symptom_log_provider.dart';
 import '../../../providers/user_profile_provider.dart';
 import '../../../utils/get_date_formatter.dart';
 import 'dart:math';
@@ -51,6 +52,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
     // 🔹 Clear provider memory
     Provider.of<UserProfileProvider>(context, listen: false).resetProfile();
+    Provider.of<SymptomLogProvider>(context, listen: false).resetLogs();
 
     Navigator.pushReplacementNamed(context, 'loginSignUpScreen');
   }
