@@ -15,8 +15,9 @@ class PeriodLogProvider with ChangeNotifier {
   /// 🔑 Generate a user-specific SharedPreferences key
   String _getPrefsKey(String uid) => "${uid}_period_logs";
 
-  /// 🔄 Recalculate cycle length for each log
-  void _recalculateCycles() {
+  /// 🔄 Sort logs and recalculate cycle lengths
+  void _sortAndRecalculate() {
+    _logs.sort((a, b) => b.startDate.compareTo(a.startDate)); // newest first
     for (int i = 0; i < _logs.length; i++) {
       if (i == 0) {
         _logs[i].cycleLength = null;
@@ -38,10 +39,8 @@ class PeriodLogProvider with ChangeNotifier {
     // Load from offline cache first
     final cachedJson = prefs.getStringList(key) ?? [];
     _logs.clear();
-    _logs.addAll(
-      cachedJson.map((e) => PeriodLog.fromMap(jsonDecode(e))),
-    );
-    _recalculateCycles();
+    _logs.addAll(cachedJson.map((e) => PeriodLog.fromMap(jsonDecode(e))));
+    _sortAndRecalculate();
     notifyListeners();
 
     // Load from Firestore
@@ -57,7 +56,7 @@ class PeriodLogProvider with ChangeNotifier {
       if (firestoreLogs.isNotEmpty) {
         _logs.clear();
         _logs.addAll(firestoreLogs);
-        _recalculateCycles();
+        _sortAndRecalculate();
         await _saveToLocal(user.uid);
         notifyListeners();
       }
@@ -79,7 +78,7 @@ class PeriodLogProvider with ChangeNotifier {
     try {
       await _firestore.collection('period_log').add({
         'uid': user.uid,
-        ...log.toMap(), // Firestore-ready map
+        ...log.toMap(),
       });
     } catch (e) {
       if (kDebugMode) print("Error saving log to Firestore: $e");
@@ -120,19 +119,6 @@ class PeriodLogProvider with ChangeNotifier {
     await prefs.setStringList(key, logsJson);
   }
 
-  /// 🔄 Recalculate cycle length for each log
-  void _sortAndRecalculate() {
-    _logs.sort((a, b) => b.startDate.compareTo(a.startDate)); // newest first
-    for (int i = 0; i < _logs.length; i++) {
-      if (i == 0) {
-        _logs[i].cycleLength = null;
-      } else {
-        _logs[i].cycleLength =
-            _logs[i].startDate.difference(_logs[i - 1].startDate).inDays;
-      }
-    }
-  }
-
   /// ✅ Reset logs (e.g., on logout)
   Future<void> resetLogs() async {
     _logs.clear();
@@ -143,4 +129,39 @@ class PeriodLogProvider with ChangeNotifier {
     }
     notifyListeners();
   }
+
+  /// 🔑 Computed: Latest log
+  PeriodLog? get latestLog => _logs.isNotEmpty ? _logs.first : null;
+
+  /// 🔑 Computed: Predicted next period
+  DateTime? get predictedNextPeriod =>
+      latestLog != null && latestLog!.startDate != null && latestLog!.cycleLength != null
+          ? latestLog!.startDate.add(Duration(days: latestLog!.cycleLength!))
+          : null;
+
+  /// 🔑 Computed: Predicted ovulation (mid-cycle)
+  DateTime? get predictedOvulation =>
+      latestLog != null && latestLog!.startDate != null && latestLog!.cycleLength != null
+          ? latestLog!.startDate.add(Duration(days: (latestLog!.cycleLength! ~/ 2)))
+          : null;
+
+  /// 🔑 Computed: Cycle phase based on last period
+  String get cyclePhase {
+    if (latestLog == null || latestLog!.startDate == null || latestLog!.cycleLength == null) {
+      return 'Unknown';
+    }
+    final day = DateTime.now().difference(latestLog!.startDate).inDays % latestLog!.cycleLength! + 1;
+    if (day <= 5) return 'Menstrual';
+    if (day <= 11) return 'Follicular';
+    if (day <= 17) return 'Ovulation';
+    if (day <= 28) return 'Luteal';
+    return 'Unknown';
+  }
+
+  /// 🔑 Computed: Fertile window (±3 days around ovulation)
+  DateTime? get fertileWindowStart =>
+      predictedOvulation != null ? predictedOvulation!.subtract(const Duration(days: 3)) : null;
+
+  DateTime? get fertileWindowEnd =>
+      predictedOvulation != null ? predictedOvulation!.add(const Duration(days: 3)) : null;
 }

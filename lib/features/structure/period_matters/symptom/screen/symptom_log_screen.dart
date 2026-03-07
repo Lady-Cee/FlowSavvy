@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:path/path.dart';
-import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../../../../models/symptom_log.dart';
 import '../../../../providers/symptom_log_provider.dart';
 import '../../../../widgets/long_custom_button.dart';
-
-// import '../../../models/symptom_log.dart';
-// import '../../../providers/symptom_log_provider.dart';
-// import '../../../widgets/long_custom_button.dart';
 
 class SymptomLogScreen extends StatefulWidget {
   @override
@@ -22,8 +17,6 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
   List<String> _selectedMood = [];
   int _painLevel = 0;
   List<String> _suggestedRemedies = [];
-  //List<String> _suggestedMedications = [];
-
 
   final Map<String, String> moodEmojis = {
     'Happy': '😊',
@@ -46,19 +39,6 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
     'Tender Breasts': ['Cold compress', 'Supportive bra', 'Vitamin E', 'Massage', 'Reduce caffeine'],
   };
 
-  // final Map<String, List<String>> _medicationSuggestions = {
-  //   'Cramps': ['Paracetamol', 'Ibuprofen', 'Midol', 'Naproxen', 'Buscopan'],
-  //   'Headache': ['Ibuprofen', 'Paracetamol', 'Excedrin', 'Aspirin', 'Naproxen'],
-  //   'Back Pain': ['Ibuprofen', 'Paracetamol', 'Diclofenac', 'Topical creams', 'Muscle relaxants'],
-  //   'Nausea': ['Domperidone', 'Ondansetron', 'Antacids', 'Ginger capsules', 'Meclizine'],
-  //   'Fatigue': ['Iron supplement', 'B-complex', 'Multivitamins', 'Folic acid', 'Energy boosters'],
-  //   'Acne': ['Benzoyl peroxide', 'Salicylic acid', 'Oral antibiotics', 'Topical retinoids', 'Hormonal therapy'],
-  //   'Mood Swings': ['SSRIs', 'Vitamin B6', 'Magnesium', 'St. John’s Wort', 'Evening primrose oil'],
-  //   'Bloating': ['Simethicone', 'Activated charcoal', 'Probiotics', 'Antacids', 'Digestive enzymes'],
-  //   'Diarrhea': ['Loperamide', 'ORS', 'Probiotics', 'Bismuth subsalicylate', 'Antispasmodics'],
-  //   'Tender Breasts': ['Ibuprofen', 'Paracetamol', 'Evening primrose oil', 'Vitamin E', 'Cold compress'],
-  // };
-
   final Map<String, String> _motivations = {
     'Cramps': 'You are stronger than the pain. Hang in there!',
     'Headache': 'Take it easy, your peace of mind matters.',
@@ -72,33 +52,29 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
     'Tender Breasts': 'Comfort is key. Treat yourself with care.',
   };
 
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() =>
+        Provider.of<SymptomLogProvider>(context, listen: false).fetchLogs());
+  }
+
   void _updateSuggestions() {
     final remedies = <String>{};
-    final meds = <String>{};
     for (var symptom in _selectedSymptoms) {
       remedies.addAll(_remedySuggestions[symptom] ?? []);
-      // meds.addAll(_medicationSuggestions[symptom] ?? []);
     }
     _suggestedRemedies = remedies.toList();
-    //_suggestedMedications = meds.toList();
   }
 
   String _getMotivation() {
     if (_selectedSymptoms.isEmpty) return 'Take care of yourself today.';
     return _motivations[_selectedSymptoms.first] ?? 'You are doing great. Keep going!';
   }
-  @override
-  void initState() {
-    super.initState();
-    Future.microtask(() =>
-        Provider.of<SymptomLogProvider>(context as BuildContext, listen: false).fetchLogs());
-  }
 
   void _saveLog() async {
-    if (_selectedSymptoms.isEmpty ||
-        _selectedMood.isEmpty ||
-        _painLevel == 0) {
-      ScaffoldMessenger.of(context as BuildContext).showSnackBar(
+    if (_selectedSymptoms.isEmpty || _selectedMood.isEmpty || _painLevel == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Please select at least one symptom, mood, and pain level'),
           backgroundColor: Colors.red,
@@ -110,7 +86,7 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
     _updateSuggestions();
 
     final log = SymptomLog(
-      id: '', // Firestore will assign
+      id: '', // Will be set in provider
       date: _selectedDate,
       symptoms: List.from(_selectedSymptoms),
       mood: List.from(_selectedMood),
@@ -119,7 +95,7 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
       motivation: _getMotivation(),
     );
 
-    await Provider.of<SymptomLogProvider>(context as BuildContext, listen: false).addLog(log);
+    await Provider.of<SymptomLogProvider>(context, listen: false).addLog(log);
 
     setState(() {
       _selectedSymptoms.clear();
@@ -128,7 +104,7 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
       _suggestedRemedies.clear();
     });
 
-    ScaffoldMessenger.of(context as BuildContext).showSnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Symptom log saved successfully.'),
         backgroundColor: Colors.green,
@@ -136,35 +112,53 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
     );
   }
 
+  void _deleteLog(SymptomLog log) {
+    final provider = Provider.of<SymptomLogProvider>(context, listen: false);
 
-  // void _saveLog() {
-  //   _updateSuggestions(); // Ensure remedies/medications are updated
-  //
-  //   final log = SymptomLog(
-  //     date: _selectedDate,
-  //     symptoms: List.from(_selectedSymptoms),
-  //     mood: List.from(_selectedMood),
-  //     painLevel: _painLevel,
-  //     medications: List.from(_suggestedMedications),
-  //     remedies: List.from(_suggestedRemedies),
-  //     motivation: _getMotivation(),
-  //   );
-  //
-  //   Provider.of<SymptomLogProvider>(context, listen: false).addLog(log);
-  //
-  //   setState(() {
-  //     _selectedSymptoms.clear();
-  //     _selectedMood.clear();
-  //     _painLevel = 0;
-  //     _suggestedRemedies.clear();
-  //     _suggestedMedications.clear();
-  //   });
-  // }
+    provider.hideLog(log.id);
+
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+
+    bool undoTapped = false;
+
+    final controller = messenger.showSnackBar(
+      SnackBar(
+        content: Text("Log deleted"),
+        backgroundColor: Colors.red,
+        duration: Duration(seconds: 4),
+        action: SnackBarAction(
+          label: "Undo",
+          textColor: Colors.white,
+          onPressed: () {
+            undoTapped = true;
+            provider.restoreLog(log.id);
+            messenger.hideCurrentSnackBar();
+          },
+        ),
+      ),
+    );
+
+    // ✅ Force close after 4s regardless of Flutter's internal timer
+    Future.delayed(Duration(seconds: 4), () {
+      messenger.hideCurrentSnackBar();
+      if (!undoTapped) {
+        provider.removeLog(log.id);
+      }
+    });
+
+    controller.closed.then((reason) {
+      if (reason != SnackBarClosedReason.action && !undoTapped) {
+        provider.removeLog(log.id);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final appColor = Theme.of(context).colorScheme;
     final logs = Provider.of<SymptomLogProvider>(context).logs;
+
     return Scaffold(
       appBar: AppBar(title: Text('Symptom Log')),
       body: Padding(
@@ -173,6 +167,7 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Date picker
               Text('Select Date:'),
               SizedBox(height: 10),
               GestureDetector(
@@ -184,22 +179,17 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
                     lastDate: DateTime(2101),
                   );
                   if (pickedDate != null) {
-                    setState(() {
-                      _selectedDate = pickedDate;
-                    });
+                    setState(() => _selectedDate = pickedDate);
                   }
                 },
                 child: InputDecorator(
-                  decoration: InputDecoration(
-                    // labelText: DateFormat('yyyy-MM-dd').format(_selectedDate),
-                    border: OutlineInputBorder(),
-                  ),
+                  decoration: InputDecoration(border: OutlineInputBorder()),
                   child: Text(DateFormat('yyyy-MM-dd').format(_selectedDate)),
                 ),
               ),
 
-
               SizedBox(height: 20),
+              // Mood
               Text('How are you feeling today?'),
               SizedBox(height: 16),
               Wrap(
@@ -219,7 +209,9 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
                   );
                 }).toList(),
               ),
+
               SizedBox(height: 16),
+              // Symptoms
               Text('Physical Symptoms'),
               SizedBox(height: 16),
               Wrap(
@@ -240,55 +232,31 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
                   );
                 }).toList(),
               ),
-              SizedBox(height: 16),
 
               SizedBox(height: 16),
+              // Pain slider
               Text('Pain Level: $_painLevel'),
-              SliderTheme(
-                data: SliderTheme.of(context).copyWith(
-                  activeTrackColor: Colors.pink,         // filled portion
-                  inactiveTrackColor: Colors.grey[300],  // unfilled portion
-                ),
-                child: Slider(
-                  value: _painLevel.toDouble(),
-                  min: 0,
-                  max: 10,
-                  divisions: 10,
-                  label: '$_painLevel',
-                  onChanged: (val) {
-                    setState(() {
-                      _painLevel = val.toInt();
-                    });
-                  },
-                ),
+              Slider(
+                value: _painLevel.toDouble(),
+                min: 0,
+                max: 10,
+                divisions: 10,
+                label: '$_painLevel',
+                activeColor: Colors.pink,
+                onChanged: (val) => setState(() => _painLevel = val.toInt()),
               ),
 
-              // Slider(
-              //   value: _painLevel.toDouble(),
-              //   min: 0,
-              //   max: 10,
-              //   divisions: 10,
-              //   label: '$_painLevel',
-              //   onChanged: (val) {
-              //     setState(() {
-              //       _painLevel = val.toInt();
-              //     });
-              //   },
-              // ),
               SizedBox(height: 24),
-              LongCustomButton(
-                onTap: _saveLog,
-                title: 'Save Log',
-              ),
+              // Save button
+              LongCustomButton(onTap: _saveLog, title: 'Save Log'),
               SizedBox(height: 24),
+
+              // Logs list
               if (logs.isNotEmpty)
                 ...logs.map((log) => Card(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(
-                      color: appColor.primary.withOpacity(0.5),
-                      width: 1,
-                    ),
+                    side: BorderSide(color: appColor.primary.withOpacity(0.5), width: 1),
                   ),
                   margin: EdgeInsets.only(bottom: 12),
                   child: ListTile(
@@ -313,31 +281,7 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
                     ),
                     trailing: IconButton(
                       icon: Icon(Icons.delete, color: Colors.red),
-                      onPressed: () async {
-                        final provider = Provider.of<SymptomLogProvider>(
-                          context,
-                          listen: false,
-                        );
-
-                        // keep a reference before deleting
-                        final deletedLog = log;
-
-                        await provider.removeLog(log.id);
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text("Log deleted"),
-                            backgroundColor: Colors.red,
-                            action: SnackBarAction(
-                              label: "Undo",
-                              textColor: Colors.white,
-                              onPressed: () async {
-                                await provider.addLog(deletedLog); // restore
-                              },
-                            ),
-                          ),
-                        );
-                      },
+                      onPressed: () => _deleteLog(log),
                     ),
                   ),
                 ))
@@ -348,6 +292,3 @@ class _SymptomLogScreenState extends State<SymptomLogScreen> {
     );
   }
 }
-
-
-
