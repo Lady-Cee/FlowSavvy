@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -8,11 +7,14 @@ import '../models/symptom_log.dart';
 
 class SymptomLogProvider with ChangeNotifier {
   final List<SymptomLog> _logs = [];
+  final Set<String> _hiddenIds = {};
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  List<SymptomLog> get logs => [..._logs];
+  /// Only returns logs that aren't hidden
+  List<SymptomLog> get logs =>
+      _logs.where((log) => !_hiddenIds.contains(log.id)).toList();
 
-  /// 🔹 Load logs from Firestore + cache offline
+  // ───────── FETCH ─────────
   Future<void> fetchLogs() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -20,6 +22,15 @@ class SymptomLogProvider with ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final key = '${user.uid}_symptom_logs';
 
+    // load offline cache first
+    final cachedLogs = prefs.getStringList(key);
+    if (cachedLogs != null) {
+      _logs.clear();
+      _logs.addAll(cachedLogs.map((e) => SymptomLog.fromMap(jsonDecode(e))));
+      notifyListeners();
+    }
+
+    // sync Firestore in background
     try {
       final snapshot = await _firestore
           .collection('symptom_log')
@@ -27,27 +38,18 @@ class SymptomLogProvider with ChangeNotifier {
           .orderBy('date', descending: true)
           .get();
 
-      _logs.clear();
-      _logs.addAll(snapshot.docs.map((doc) => SymptomLog.fromDoc(doc)).toList());
-
-      // save offline
-      final jsonList = _logs.map((log) => jsonEncode(log.toMap())).toList();
-      await prefs.setStringList(key, jsonList);
-
-      notifyListeners();
-    } catch (e) {
-      // fallback: load from SharedPreferences if offline
-      final cachedLogs = prefs.getStringList(key);
-      if (cachedLogs != null) {
+      if (snapshot.docs.isNotEmpty) {
         _logs.clear();
-        _logs.addAll(
-            cachedLogs.map((e) => SymptomLog.fromMap(jsonDecode(e))).toList());
+        _logs.addAll(snapshot.docs.map((doc) => SymptomLog.fromDoc(doc)));
+        await _saveLogsToPrefs(user.uid);
         notifyListeners();
       }
+    } catch (_) {
+      // offline cache already loaded
     }
   }
 
-  /// 🔹 Add log to Firestore + local list + offline cache
+  // ───────── ADD ─────────
   Future<void> addLog(SymptomLog log) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -57,44 +59,54 @@ class SymptomLogProvider with ChangeNotifier {
       ...log.toMap(),
     });
 
-    final newLog = SymptomLog(
-      id: docRef.id,
-      date: log.date,
-      symptoms: log.symptoms,
-      mood: log.mood,
-      painLevel: log.painLevel,
-      remedies: log.remedies,
-      motivation: log.motivation,
-    );
-
+    final newLog = log.copyWith(id: docRef.id);
     _logs.insert(0, newLog);
-    await _saveLogsToPrefs(user.uid); // update offline cache
+    await _saveLogsToPrefs(user.uid);
     notifyListeners();
   }
 
-  /// 🔹 Remove log from Firestore + list + offline cache
+  // ───────── SOFT DELETE ─────────
+  void hideLog(String id) {
+    _hiddenIds.add(id);
+    notifyListeners();
+  }
+
+  void restoreLog(String id) {
+    _hiddenIds.remove(id);
+    notifyListeners();
+  }
+
+  // ───────── HARD DELETE ─────────
   Future<void> removeLog(String id) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
-    await _firestore.collection('symptom_log').doc(id).delete();
+    _hiddenIds.remove(id);
     _logs.removeWhere((log) => log.id == id);
-    await _saveLogsToPrefs(user.uid); // update offline cache
+
+    try {
+      await _firestore.collection('symptom_log').doc(id).delete();
+    } catch (_) {
+      // Firestore failed — still removed locally
+    }
+
+    await _saveLogsToPrefs(user.uid);
     notifyListeners();
   }
 
-  /// 🔹 Helper: save current logs to SharedPreferences
+  // ───────── HELPERS ─────────
   Future<void> _saveLogsToPrefs(String uid) async {
     final prefs = await SharedPreferences.getInstance();
     final key = '${uid}_symptom_logs';
-    final jsonList = _logs.map((log) => jsonEncode(log.toMap())).toList();
+    final visibleLogs = _logs.where((log) => !_hiddenIds.contains(log.id));
+    final jsonList = visibleLogs.map((log) => jsonEncode(log.toMap())).toList();
     await prefs.setStringList(key, jsonList);
   }
 
-  /// 🔹 Reset logs on logout / switch user
-  void resetLogs() async {
-    _logs.clear();
+  Future<void> resetLogs() async {
     final user = FirebaseAuth.instance.currentUser;
+    _logs.clear();
+    _hiddenIds.clear();
     if (user != null) {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('${user.uid}_symptom_logs');
@@ -102,19 +114,3 @@ class SymptomLogProvider with ChangeNotifier {
     notifyListeners();
   }
 }
-
-
-
-// import 'package:flutter/material.dart';
-// import '../models/symptom_log.dart';
-//
-// class SymptomLogProvider with ChangeNotifier {
-//   final List<SymptomLog> _logs = [];
-//
-//   List<SymptomLog> get logs => [..._logs];
-//
-//   void addLog(SymptomLog log) {
-//     _logs.add(log);
-//     notifyListeners();
-//   }
-// }
