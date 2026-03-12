@@ -242,10 +242,16 @@ class _PeriodMattersScreenState extends State<PeriodMattersScreen> {
       'screen': UserProfileScreen(),
     },
     {
-      'title': 'Pad Request Form',
+      'title': 'Pad Request \n Form',
       'icon': Icons.assignment_outlined,
       'type': 'url',
-      'url': 'https://forms.gle/nZYx7X6gjNgrgm1X6', // Pad request form url
+      'url': 'https://forms.gle/RJbhszE4bhq1TDCM8',   // Pad request form url
+    },
+    {
+      'title': 'NGO/Donor/Sponsor Form',
+      'icon': Icons.volunteer_activism,
+      'type': 'url',
+      'url': 'https://forms.gle/iqwULzMhTXh9XiCb9', // NGO/DONOR registration form url
     },
   ];
 
@@ -266,7 +272,7 @@ class _PeriodMattersScreenState extends State<PeriodMattersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Everything About Period'),
+        title: Text('Period Matters'),
         centerTitle: true,
       ),
       body: Padding(
