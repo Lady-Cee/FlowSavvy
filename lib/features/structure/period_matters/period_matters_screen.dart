@@ -275,7 +275,7 @@ class _PeriodMattersScreenState extends State<PeriodMattersScreen> {
           children: [
             const Text(
         'Take control of your menstrual health - track your menstrual cycle, record symptoms, '
-            'manage your profile, request pads, and access support from NGOs, Donors and sponsors',
+            'manage your profile, request pads, and access support from NGOs and sponsors',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 30),
