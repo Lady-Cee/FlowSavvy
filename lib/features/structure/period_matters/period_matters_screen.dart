@@ -274,8 +274,8 @@ class _PeriodMattersScreenState extends State<PeriodMattersScreen> {
         child: Column(
           children: [
             const Text(
-              'Log your period, track the symptoms and your profile. '
-                  'This section provides you with platform to record your menses start and end date, record the symptoms for each month and view your profile.',
+        'Take control of your menstrual health - track your menstrual cycle, record symptoms, '
+            'manage your profile, request pads, and access support from NGOs and sponsors',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 30),

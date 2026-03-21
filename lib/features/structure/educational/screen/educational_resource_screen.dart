@@ -57,8 +57,8 @@ class _EducationalResourceScreenState extends State<EducationalResourceScreen> {
         child: Column(
           children: [
             const Text(
-              'Learn, understand, and share knowledge about menstruation. '
-                  'This section provides facts, hygiene tips, roles we can all play, and answers to frequently asked questions.',
+        'Build confidence through knowledge — challenge myths, learn key facts, practice healthy habits, '
+        'understand collective roles, and get instant answers from PeriodBot.',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 30),
