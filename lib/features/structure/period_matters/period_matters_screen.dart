@@ -242,11 +242,18 @@ class _PeriodMattersScreenState extends State<PeriodMattersScreen> {
       'screen': UserProfileScreen(),
     },
     {
-      'title': 'Pad Request Form',
+      'title': 'NGO/Donor/Sponsor Form',
+      'icon': Icons.volunteer_activism,
+      'type': 'url',
+      'url': 'https://forms.gle/iqwULzMhTXh9XiCb9', // NGO/DONOR registration form url
+    },
+    {
+      'title': 'Pad Request \n Form',
       'icon': Icons.assignment_outlined,
       'type': 'url',
-      'url': 'https://forms.gle/nZYx7X6gjNgrgm1X6', // Pad request form url
+      'url': 'https://forms.gle/RJbhszE4bhq1TDCM8',   // Pad request form url
     },
+
   ];
 
   void _handleTap(Map<String, dynamic> resource) {
@@ -266,7 +273,7 @@ class _PeriodMattersScreenState extends State<PeriodMattersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Everything About Period'),
+        title: Text('Period Matters'),
         centerTitle: true,
       ),
       body: Padding(
@@ -274,8 +281,8 @@ class _PeriodMattersScreenState extends State<PeriodMattersScreen> {
         child: Column(
           children: [
             const Text(
-        'Take control of your menstrual health - track your menstrual cycle, record symptoms, '
-            'manage your profile, request pads, and access support from NGOs and sponsors',
+              'Log your period, track the symptoms and your profile. '
+                  'This section provides you with platform to record your menses start and end date, record the symptoms for each month and view your profile.',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 30),
