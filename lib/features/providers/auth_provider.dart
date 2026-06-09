@@ -19,10 +19,27 @@ class AuthProvider with ChangeNotifier {
     return await _authService.login(email, password);
   }
 
-  Future<String?> signUp(String email, String password, String firstName, String surname) async {
-    return await _authService.signUp(email, password, firstName, surname);
+  Future<String?> signUp(
+      String email,
+      String password,
+      String firstName,
+      String surname,
+      String schoolName,
+      String schoolLga,
+      String contactName,
+      String contactPhone,
+      ) async {
+    return await _authService.signUp(
+      email,
+      password,
+      firstName,
+      surname,
+      schoolName,
+      schoolLga,
+      contactName,
+      contactPhone,
+    );
   }
-
   Future<String?> resetPassword(String email) async {
     return await _authService.resetPassword(email);
   }
