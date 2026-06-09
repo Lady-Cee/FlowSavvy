@@ -6,19 +6,59 @@ class FireBaseAuthService {
   final FirebaseFirestore _fireStore = FirebaseFirestore.instance;
 
   // Sign up
-  Future<String?> signUp(String email, String password, String firstName, String surname) async {
+  Future<String?> signUp(
+      String email,
+      String password,
+      String firstName,
+      String surname,
+      String schoolName,
+      String schoolLga,
+      String contactName,
+      String contactPhone,
+      ) async {
     try {
       final userCredential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      // Save additional user info to Firestore
-      await _fireStore.collection('users').doc(userCredential.user!.uid).set({
+      final uid = userCredential.user!.uid;
+      final now = Timestamp.now();
+
+      // Save user to users collection
+      await _fireStore.collection('users').doc(uid).set({
         'firstName': firstName,
         'surname': surname,
         'email': email,
-        'createdAt': Timestamp.now(),
+        'schoolName': schoolName,
+        'createdAt': now,
+      });
+
+      // Save user under their school in schools collection
+      // Document ID is school name lowercased with underscores
+      final schoolDocId = schoolName.toLowerCase().replaceAll(' ', '_');
+
+      // Upsert school document with latest info
+      await _fireStore.collection('schools').doc(schoolDocId).set({
+        'name': schoolName,
+        'lga': schoolLga,
+        'contactName': contactName,
+        'contactPhone': contactPhone,
+        'updatedAt': now,
+      }, SetOptions(merge: true));
+
+      // Add user as a member under the school
+      await _fireStore
+          .collection('schools')
+          .doc(schoolDocId)
+          .collection('members')
+          .doc(uid)
+          .set({
+        'uid': uid,
+        'firstName': firstName,
+        'surname': surname,
+        'email': email,
+        'joinedAt': now,
       });
 
       return null;
@@ -37,7 +77,6 @@ class FireBaseAuthService {
       return 'An unexpected error occurred.';
     }
   }
-
   // Login
   Future<String?> login(String email, String password) async {
     try {

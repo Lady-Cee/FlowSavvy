@@ -80,7 +80,16 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => UserProfileProvider()),
         ChangeNotifierProvider(create: (_) => SymptomLogProvider()),
-        ChangeNotifierProvider(create: (_) => PeriodLogProvider()),
+        // ChangeNotifierProvider(create: (_) => PeriodLogProvider()),
+        // ✅ NEW:
+        ChangeNotifierProvider<PeriodLogProvider>(
+          create: (_) {
+            final provider = PeriodLogProvider();
+            // Load period logs immediately when provider is created
+            provider.loadLogs();
+            return provider;
+          },
+        ),
         ChangeNotifierProvider(create: (_) => GeminiProvider()),
         ChangeNotifierProvider(create: (_) => CommunitySupportProvider()),
         ChangeNotifierProvider(create: (_) => ProductProvider()),
