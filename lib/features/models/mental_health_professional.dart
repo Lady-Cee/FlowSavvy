@@ -1,17 +1,19 @@
 class MentalHealthProfessional {
   final String id;
   final String name;
-  final String qualification;
+  final String expertise;
   final String imageUrl;
   final String bio;
-  final String contactInfo;
+  final String email;
+  final String phoneNumber;
 
   MentalHealthProfessional({
     required this.id,
     required this.name,
-    required this.qualification,
+    required this.expertise,
     required this.imageUrl,
     required this.bio,
-    required this.contactInfo,
+    required this.email,
+    required this.phoneNumber,
   });
 }

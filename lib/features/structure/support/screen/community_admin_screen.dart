@@ -18,32 +18,56 @@ class CommunityAdminScreen extends StatelessWidget {
           final admin = admins[i];
           return Card(
             margin: EdgeInsets.all(10),
-             child: ListTile(
-               leading: Image.network(admin.imageUrl, width: 60, fit: BoxFit.cover),
-               title: Text(admin.name),
-               subtitle: Column(
-                 crossAxisAlignment: CrossAxisAlignment.start,
-                 children: [
-                   Text(admin.role, style: TextStyle(fontWeight: FontWeight.w500)),
-                   SizedBox(height: 4),
-                   Text(admin.bio),
-                   Text(admin.contactInfo),
-                  // Text('Contact: ${admin.contactInfo}'),
-                 ],
-               ),
-               trailing: Icon(Icons.arrow_forward),
-               onTap: () async {
-                 final url = Uri.parse(admin.imageUrl);
 
-                 if (await launchUrl(url, mode: LaunchMode.inAppWebView)) {
-                   // launched
-                 } else {
-                   ScaffoldMessenger.of(context).showSnackBar(
-                     SnackBar(content: Text('Could not launch product link')),
-                   );
-                 }
-               },
-             ),
+            child: ListTile(
+              leading: Image.asset(
+                admin.imageUrl,
+                width: 60,
+                fit: BoxFit.cover,
+              ),
+
+              title: Text(admin.name),
+
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+
+                children: [
+                  Text(
+                    admin.role,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+
+                  SizedBox(height: 4),
+
+                  Text(admin.bio),
+                  Text(admin.email),
+                  Text(admin.phoneNumber),
+                ],
+              ),
+
+              trailing: Icon(Icons.call),
+
+              onTap: () async {
+                final Uri phoneUri = Uri(
+                  scheme: 'tel',
+                  path: admin.phoneNumber,
+                );
+
+                if (await canLaunchUrl(phoneUri)) {
+                  await launchUrl(phoneUri);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Could not make phone call'),
+                    ),
+                  );
+                }
+              },
+            ),
+          );
 
             // ListTile(
             //   leading: Image.network(admin.imageUrl, width: 60, fit: BoxFit.cover),
@@ -62,7 +86,7 @@ class CommunityAdminScreen extends StatelessWidget {
             //       }
             //     }
             // ),
-          );
+
         },
       ),
     );

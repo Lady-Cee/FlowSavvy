@@ -6,11 +6,13 @@ class MentalHealthProvider with ChangeNotifier {
   final List<MentalHealthProfessional> _professionals = [
     MentalHealthProfessional(
       id: '1',
-      name: 'Dr. Emily Clark',
-      qualification: 'Clinical Psychologist',
-      imageUrl: 'https://img.freepik.com/free-photo/medium-shot-smiley-woman-teaching_23-2149272223.jpg',
+      name: 'Atinuke Manuels',
+      expertise: 'Clinical Psychologist',
+      imageUrl: 'assets/images/Tinu1.png',
       bio: 'Specializes in cognitive behavioral therapy and trauma recovery.',
-      contactInfo: 'emily.clark@example.com',
+        email: 'aodeshola@yahoo.com',
+        phoneNumber: '+2347060945459'
+
     ),
     // Add more professionals as needed
   ];

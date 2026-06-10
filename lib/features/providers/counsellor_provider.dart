@@ -6,11 +6,12 @@ class CounsellorProvider with ChangeNotifier {
   final List<Counsellor> _counsellors = [
     Counsellor(
       id: '1',
-      name: 'Mr. John Doe',
+      name: 'Tinu Atinuke',
       expertise: 'Stress Management',
-      imageUrl: 'https://img.freepik.com/free-photo/medium-shot-smiley-woman-teaching_23-2149272223.jpg',
+      imageUrl: 'assets/images/Tinu1.png',
       bio: 'Helping individuals manage stress and anxiety effectively.',
-      contactInfo: 'john.doe@example.com',
+      email: 'aodeshola@yahoo.com',
+        phoneNumber: '+2347060945459'
     ),
     // Add more counsellors as needed
   ];

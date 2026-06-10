@@ -15,45 +15,61 @@ class CounsellorScreen extends StatelessWidget {
         itemCount: counsellors.length,
         itemBuilder: (ctx, i) {
           final counsellor = counsellors[i];
+
           return Card(
             margin: EdgeInsets.all(10),
-            child:
-            ListTile(
-              leading: Image.network(counsellor.imageUrl, width: 60, fit: BoxFit.cover),
+
+            child: ListTile(
+              leading: Image.asset(
+                counsellor.imageUrl,
+                width: 60,
+                fit: BoxFit.cover,
+              ),
+
               title: Text(counsellor.name),
+
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+
                 children: [
-                  Text(counsellor.expertise, style: TextStyle(fontWeight: FontWeight.w500)),
+                  Text(
+                    counsellor.expertise,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+
                   SizedBox(height: 4),
+
                   Text(counsellor.bio),
-                  Text(counsellor.contactInfo),
-                  // Text('Contact: ${admin.contactInfo}'),
+                  Text(counsellor.email),
+                  Text(counsellor.phoneNumber),
                 ],
               ),
-              trailing: Icon(Icons.arrow_forward),
-              onTap: () async {
-                final url = Uri.parse(counsellor.imageUrl);
 
-                if (await launchUrl(url, mode: LaunchMode.inAppWebView)) {
-                  // launched
+              trailing: Icon(Icons.call),
+
+              onTap: () async {
+                final Uri phoneUri = Uri(
+                  scheme: 'tel',
+                  path: counsellor.phoneNumber,
+                );
+
+                if (await canLaunchUrl(phoneUri)) {
+                  await launchUrl(phoneUri);
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Could not launch product link')),
+                    SnackBar(
+                      content: Text('Could not make phone call'),
+                    ),
                   );
                 }
               },
             ),
-            // ListTile(
-            //   leading: Image.network(counsellor.imageUrl, width: 60, fit: BoxFit.cover),
-            //   title: Text(counsellor.name),
-            //   subtitle: Text(counsellor.expertise),
-            //   trailing: Icon(Icons.arrow_forward),
-            //   onTap: () {
-            //     // Navigate to counsellor's detail or booking page
-            //   },
-            // ),
           );
+
+
         },
       ),
     );

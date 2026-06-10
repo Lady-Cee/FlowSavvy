@@ -4,7 +4,8 @@ class Counsellor {
   final String expertise;
   final String imageUrl;
   final String bio;
-  final String contactInfo;
+  final String email;
+  final String phoneNumber;
 
   Counsellor({
     required this.id,
@@ -12,6 +13,7 @@ class Counsellor {
     required this.expertise,
     required this.imageUrl,
     required this.bio,
-    required this.contactInfo,
+    required this.email,
+    required this.phoneNumber,
   });
 }

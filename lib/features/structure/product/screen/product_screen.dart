@@ -23,8 +23,9 @@ class ProductScreen extends StatelessWidget {
           return Card(
             margin: EdgeInsets.all(10),
             child: ListTile(
-              leading: Image.network(product.imageUrl, width: 60, fit: BoxFit.cover),
-              title: Text(product.name),
+             // leading: Image.network(product.imageUrl, width: 60, fit: BoxFit.cover),
+                leading: Image.asset(product.imageUrl, width: 60, fit: BoxFit.cover),
+                title: Text(product.name),
               subtitle: Text(product.description),
               trailing: Icon(Icons.arrow_forward),
 

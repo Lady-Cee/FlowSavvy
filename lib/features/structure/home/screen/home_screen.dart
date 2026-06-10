@@ -135,8 +135,13 @@ class _HomeScreenState extends State<HomeScreen>
       fertileEnd: fertileEnd,
       phase: phase,
     );
+
   }
 
+  String capitalizeFirstLetter(String text) {
+    if (text.isEmpty) return text;
+    return text[0].toUpperCase() + text.substring(1);
+  }
   @override
   Widget build(BuildContext context) {
     final profileProvider = context.watch<UserProfileProvider>();
@@ -158,7 +163,8 @@ class _HomeScreenState extends State<HomeScreen>
         title: !hasProfile
             ? Text(appStrings.flowSavvyDashBoardText1,
             style: AppTextStyles.largeTextSemiBold(context))
-            : Text('Welcome, $username 👋',
+            : Text ('Welcome, ${capitalizeFirstLetter(username)} 👋',
+          //  : Text('Welcome, $username 👋',
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
         centerTitle: !hasProfile,
         actions: [

@@ -8,9 +8,10 @@ class CommunityAdminProvider with ChangeNotifier {
       id: '1',
       name: 'Ms. Cynthia Enweonwu',
       role: 'Community Manager,',
-      imageUrl: 'https://img.freepik.com/free-photo/medium-shot-smiley-woman-teaching_23-2149272223.jpg',
+      imageUrl: 'assets/images/Cyn.png',
       bio: 'Ensures a safe and engaging community environment.',
-      contactInfo: 'ccenweonwu@gmail.com',
+      email: 'ccenweonwu@gmail.com',
+      phoneNumber: '+2348038849601'
     ),
     // Add more admins as needed
   ];

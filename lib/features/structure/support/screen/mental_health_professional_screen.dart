@@ -1,3 +1,4 @@
+import 'package:flow_savvy/features/models/mental_health_professional.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -17,35 +18,55 @@ class MentalHealthProfessionalScreen extends StatelessWidget {
           final professional = professionals[i];
           return Card(
             margin: EdgeInsets.all(10),
-            child:
-            ListTile(
-              leading: Image.network(professional.imageUrl, width: 60, fit: BoxFit.cover),
+
+            child: ListTile(
+              leading: Image.asset(
+                professional.imageUrl,
+                width: 60,
+                fit: BoxFit.cover,
+              ),
+
               title: Text(professional.name),
+
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+
                 children: [
-                  Text(professional.qualification, style: TextStyle(fontWeight: FontWeight.w500)),
+                  Text(
+                    professional.expertise,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+
                   SizedBox(height: 4),
+
                   Text(professional.bio),
-                  Text(professional.contactInfo),
-                  // Text('Contact: ${admin.contactInfo}'),
+                  Text(professional.email),
+                  Text(professional.phoneNumber),
                 ],
               ),
-              trailing: Icon(Icons.arrow_forward),
-              onTap: () async {
-                final url = Uri.parse(professional.imageUrl);
 
-                if (await launchUrl(url, mode: LaunchMode.inAppWebView)) {
-                  // launched
+              trailing: Icon(Icons.call),
+
+              onTap: () async {
+                final Uri phoneUri = Uri(
+                  scheme: 'tel',
+                  path: professional.phoneNumber,
+                );
+
+                if (await canLaunchUrl(phoneUri)) {
+                  await launchUrl(phoneUri);
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Could not launch product link')),
+                    SnackBar(
+                      content: Text('Could not make phone call'),
+                    ),
                   );
                 }
               },
             ),
-
-
           );
         },
       ),
