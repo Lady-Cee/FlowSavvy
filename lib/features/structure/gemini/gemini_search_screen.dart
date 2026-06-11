@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../providers/gemini_provider.dart';
 
@@ -87,8 +88,38 @@ class _GeminiSearchScreenState extends State<GeminiSearchScreen> {
                         Text("You asked:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                         Text(response.userQuery, style: TextStyle(fontSize: 16)),
                         SizedBox(height: 10),
-                        Text("Gemini says:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                        Text(response.answer, style: TextStyle(fontSize: 16)),
+                        Text("PeriodBot:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                        GestureDetector(
+                          onLongPress: () {
+                            Clipboard.setData(
+                              ClipboardData(text: response.answer),
+                            );
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text("Response copied"),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                          },
+                          child: Text(
+                              response.answer
+                                  .replaceAll('*', '')
+                                   .replaceAll('#', '')
+                                   .replaceAll('•', '')
+                                   .trim(),
+                               style: TextStyle(fontSize: 16),
+                          ),
+                        ),
+                        // Text(
+                        //   response.answer
+                        //       .replaceAll('*', '')
+                        //       .replaceAll('#', '')
+                        //       .replaceAll('•', '')
+                        //       .trim(),
+                        //   style: TextStyle(fontSize: 16),
+                        // )
+                        // Text(response.answer, style: TextStyle(fontSize: 16)),
                       ],
                     ),
                     trailing: IconButton(
