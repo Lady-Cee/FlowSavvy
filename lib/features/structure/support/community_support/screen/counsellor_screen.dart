@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../providers/counsellor_provider.dart';
+import '../../../../providers/counsellor_provider.dart';
+
+//import '../../../providers/counsellor_provider.dart';
 
 class CounsellorScreen extends StatelessWidget {
   @override

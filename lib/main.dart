@@ -15,7 +15,7 @@ import 'package:flow_savvy/features/structure/onboarding/onboarding_screens.dart
 import 'package:flow_savvy/features/structure/period_matters/period/screen/period_log_screen.dart';
 import 'package:flow_savvy/features/structure/period_matters/period_matters_screen.dart';
 //import 'package:flow_savvy/features/structure/period/screen/period_log_screen.dart';
-import 'package:flow_savvy/features/structure/support/screen/community_support_screen.dart';
+//import 'package:flow_savvy/features/structure/support/screen/community_support_screen.dart';
 // import 'package:flow_savvy/features/structure/symptom/screen/symptom_log_screen.dart';
 //import 'package:flow_savvy/features/structure/user/screen/user_profile_screen.dart';
 import 'package:flow_savvy/features/theme/app_theme.dart';
@@ -27,7 +27,7 @@ import 'package:provider/provider.dart';
 import 'features/models/profile_complete_model.dart';
 import 'features/providers/auth_provider.dart';
 import 'features/providers/community_admin_provider.dart';
-import 'features/providers/community_support_provider.dart';
+//import 'features/providers/community_support_provider.dart';
 import 'features/providers/counsellor_provider.dart';
 import 'features/providers/current_cycle_provider.dart';
 import 'features/providers/doctor_provider.dart';
@@ -45,10 +45,13 @@ import 'features/structure/period_matters/symptom/screen/symptom_log_screen.dart
 import 'features/structure/period_matters/user/screen/user_profile_screen.dart';
 import 'features/structure/product/screen/product_screen.dart';
 import 'features/structure/splash/splash_screen.dart';
-import 'features/structure/support/screen/community_admin_screen.dart';
-import 'features/structure/support/screen/counsellor_screen.dart';
-import 'features/structure/support/screen/doctor_screen.dart';
-import 'features/structure/support/screen/mental_health_professional_screen.dart';
+import 'features/structure/support/community_support/providers/community_support_provider.dart';
+import 'features/structure/support/community_support/screen/community_support_screen.dart';
+import 'features/structure/support/community_support/screen/community_admin_screen.dart';
+//import 'features/structure/support/screen/counsellor_screen.dart';
+import 'features/structure/support/community_support/screen/counsellor_screen.dart';
+import 'features/structure/support/community_support/screen/doctor_screen.dart';
+import 'features/structure/support/community_support/screen/mental_health_professional_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'features/utils/app_strings.dart';
 import 'features/account/login/login_signup_screen.dart';
@@ -91,7 +94,7 @@ class MyApp extends StatelessWidget {
           },
         ),
         ChangeNotifierProvider(create: (_) => GeminiProvider()),
-        ChangeNotifierProvider(create: (_) => CommunitySupportProvider()),
+       ChangeNotifierProvider(create: (_) => CommunitySupportProvider()),
         ChangeNotifierProvider(create: (_) => ProductProvider()),
         ChangeNotifierProvider(create: (_) => CommunityAdminProvider()),
         ChangeNotifierProvider(create: (_) => CounsellorProvider()),
@@ -148,7 +151,7 @@ class MyApp extends StatelessWidget {
           '/educational': (_) => EducationalResourceScreen(),
           '/profile': (_) => UserProfileScreen(),
           '/search': (_) => GeminiSearchScreen(),
-          '/support' : (_) => CommunitySupportScreen(),
+         '/support' : (_) => CommunitySupportScreen(),
           '/product' : (_) => ProductScreen(),
           '/counsellor' : (_) => CounsellorScreen(),
           '/doctor' : (_) => DoctorScreen(),

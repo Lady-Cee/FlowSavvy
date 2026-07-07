@@ -1,32 +1,32 @@
-import 'package:flow_savvy/features/models/community_admin.dart';
+import 'package:flow_savvy/features/models/mental_health_professional.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../providers/community_admin_provider.dart';
+import '../../../../providers/mental_health_provider.dart';
 
-class CommunityAdminScreen extends StatelessWidget {
+class MentalHealthProfessionalScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final admins = Provider.of<CommunityAdminProvider>(context).admins;
+    final professionals = Provider.of<MentalHealthProvider>(context).professionals;
 
     return Scaffold(
-      appBar: AppBar(title: Text('Consult a Community Admin')),
+      appBar: AppBar(title: Text('Consult a Mental Health Professional')),
       body: ListView.builder(
-        itemCount: admins.length,
+        itemCount: professionals.length,
         itemBuilder: (ctx, i) {
-          final admin = admins[i];
+          final professional = professionals[i];
           return Card(
             margin: EdgeInsets.all(10),
 
             child: ListTile(
               leading: Image.asset(
-                admin.imageUrl,
+                professional.imageUrl,
                 width: 60,
                 fit: BoxFit.cover,
               ),
 
-              title: Text(admin.name),
+              title: Text(professional.name),
 
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -34,7 +34,7 @@ class CommunityAdminScreen extends StatelessWidget {
 
                 children: [
                   Text(
-                    admin.role,
+                    professional.expertise,
                     style: TextStyle(
                       fontWeight: FontWeight.w500,
                     ),
@@ -42,9 +42,9 @@ class CommunityAdminScreen extends StatelessWidget {
 
                   SizedBox(height: 4),
 
-                  Text(admin.bio),
-                  Text(admin.email),
-                  Text(admin.phoneNumber),
+                  Text(professional.bio),
+                  Text(professional.email),
+                  Text(professional.phoneNumber),
                 ],
               ),
 
@@ -53,7 +53,7 @@ class CommunityAdminScreen extends StatelessWidget {
               onTap: () async {
                 final Uri phoneUri = Uri(
                   scheme: 'tel',
-                  path: admin.phoneNumber,
+                  path: professional.phoneNumber,
                 );
 
                 if (await canLaunchUrl(phoneUri)) {
@@ -68,25 +68,6 @@ class CommunityAdminScreen extends StatelessWidget {
               },
             ),
           );
-
-            // ListTile(
-            //   leading: Image.network(admin.imageUrl, width: 60, fit: BoxFit.cover),
-            //   title: Text(admin.name),
-            //   subtitle: Text(admin.role),
-            //   trailing: Icon(Icons.arrow_forward),
-            //     onTap: () async {
-            //       final url = Uri.parse(admin.imageUrl);
-            //
-            //       if (await launchUrl(url, mode: LaunchMode.inAppWebView)) {
-            //         // print("Launched in in-app view");
-            //       } else {
-            //         ScaffoldMessenger.of(context).showSnackBar(
-            //           SnackBar(content: Text('Could not launch product link')),
-            //         );
-            //       }
-            //     }
-            // ),
-
         },
       ),
     );
