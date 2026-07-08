@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../models/schools_data.dart';
+import '../../data/schools_data.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/is_login_state_provider.dart';
 import '../../widgets/custom_text_field.dart';
