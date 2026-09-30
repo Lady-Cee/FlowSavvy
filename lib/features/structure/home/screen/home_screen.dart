@@ -226,10 +226,13 @@ class _HomeScreenState extends State<HomeScreen>
           }
 
           // ── All cycle data resolved in one call ──
+          final periodProvider = context.watch<PeriodLogProvider>(); // Make sure provider is watched
+
           final cycle = _resolveCycleData(
             logDate: periodProvider.latestLog?.startDate,
             profileDate: profile.lastPeriodDate,
-            profileCycleLength: profile.cycleLength,
+            // 🔑 Use the provider's dynamic cycle length method instead of the static profile length
+            profileCycleLength: periodProvider.getEffectiveCycleLength(),
           );
 
           final today = DateTime.now();
@@ -368,10 +371,10 @@ class _HomeScreenState extends State<HomeScreen>
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'Last Period on ${DateFormat('MMMM d yyyy').format(cycle.lastPeriodDate)}',
+                              'Last Period Started on ${DateFormat('MMMM d yyyy').format(cycle.lastPeriodDate)}',
                               textAlign: TextAlign.center,
                               style: AppTextStyles.semiBold(context)
-                                  .copyWith(fontSize: 12),
+                                  .copyWith(fontSize: 9),
                             ),
                           ],
                         ),

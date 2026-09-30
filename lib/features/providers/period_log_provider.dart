@@ -366,7 +366,7 @@ class PeriodLogProvider with ChangeNotifier {
 
   /// 🔑 Get effective cycle length (calculated, default, or 28)
   /// 🔑 Get effective cycle length (prioritize user profile default if logs don't have a valid custom length)
-  int _getEffectiveCycleLength() {
+  int getEffectiveCycleLength() {
     // If the latest log has its own cycle length, use it; otherwise fallback to profile default
     if (_logs.isNotEmpty && _logs.first.cycleLength != null && _logs.first.cycleLength! > 0) {
       return _logs.first.cycleLength!;
@@ -378,7 +378,7 @@ class PeriodLogProvider with ChangeNotifier {
   DateTime? get predictedNextPeriod {
     if (_logs.isEmpty || _logs.first.startDate == null) return null;
 
-    final cycleLength = _getEffectiveCycleLength();
+    final cycleLength = getEffectiveCycleLength();
     DateTime predicted = _logs.first.startDate.add(Duration(days: cycleLength));
     final today = DateTime.now();
 
@@ -436,7 +436,7 @@ class PeriodLogProvider with ChangeNotifier {
       return null;
     }
 
-    final cycleLength = _getEffectiveCycleLength();
+    final cycleLength = getEffectiveCycleLength();
     final ovulation = nextPeriod.subtract(Duration(days: (cycleLength ~/ 2)));
     if (kDebugMode) {
       print('💗 Predicted Ovulation: $ovulation');
@@ -450,7 +450,7 @@ class PeriodLogProvider with ChangeNotifier {
       return 'Unknown';
     }
 
-    final cycleLength = _getEffectiveCycleLength();
+    final cycleLength = getEffectiveCycleLength();
     final day = DateTime.now().difference(latestLog!.startDate!).inDays % cycleLength + 1;
     String phase;
     if (day <= 5) phase = 'Menstrual';
