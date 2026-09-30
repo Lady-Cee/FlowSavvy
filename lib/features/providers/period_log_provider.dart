@@ -298,6 +298,39 @@ class PeriodLogProvider with ChangeNotifier {
     }
   }
 
+  /// ✅ Update an existing log (offline + Firestore)
+  Future<void> updateLog(int index, PeriodLog updatedLog) async {
+    if (index < 0 || index >= _logs.length) return;
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    // Keep track of the old log to help find its document in Firestore
+    final oldLog = _logs[index];
+
+    // Update the local list entry
+    _logs[index] = updatedLog;
+    _sortAndRecalculate();
+    notifyListeners();
+    await _saveToLocal(user.uid);
+
+    try {
+      // Find and update the corresponding document in Firestore
+      final snapshot = await _firestore
+          .collection('period_log')
+          .where('uid', isEqualTo: user.uid)
+          .where('startDate', isEqualTo: oldLog.startDate.toIso8601String())
+          .get();
+
+      for (var doc in snapshot.docs) {
+        await doc.reference.update(updatedLog.toMap());
+      }
+
+      if (kDebugMode) print('✅ Period log updated successfully');
+    } catch (e) {
+      if (kDebugMode) print("❌ Error updating log in Firestore: $e");
+    }
+  }
+
   /// ✅ Remove log
   Future<void> removeLog(int index) async {
     if (index < 0 || index >= _logs.length) return;
