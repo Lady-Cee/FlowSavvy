@@ -88,42 +88,65 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   /// ── Single source of truth for all cycle calculations ──
+  /// ── Single source of truth for all cycle calculations ──
   _CycleData _resolveCycleData({
     required DateTime? logDate,
     required DateTime profileDate,
-    required int? logCycleLength,
     required int profileCycleLength,
   }) {
     final today = DateTime.now();
 
-    // Latest date wins
+    // RULE: If a formal period log exists, it takes precedence as the latest period.
+    // Otherwise, fall back to the user profile's base date.
     final lastPeriodDate = (logDate != null && logDate.isAfter(profileDate))
         ? logDate
         : profileDate;
 
-    // Cycle length follows whichever date won
-    final cycleLength = (logDate != null && logDate.isAfter(profileDate))
-        ? (logCycleLength ?? profileCycleLength)
-        : profileCycleLength;
+    // Always use the profile cycle length or the provider's active cycle length uniformly
+    final cycleLength = profileCycleLength;
 
-    // All predictions derived from the same base
     final daysSince = today.difference(lastPeriodDate).inDays;
+
+    // Handle edge case where last period is somehow in the future
+    if (daysSince < 0) {
+      return _CycleData(
+        lastPeriodDate: lastPeriodDate,
+        cycleLength: cycleLength,
+        daysUntilNextPeriod: cycleLength,
+        nextPeriodDate: lastPeriodDate.add(Duration(days: cycleLength)),
+        ovulation: lastPeriodDate.add(Duration(days: cycleLength ~/ 2)),
+        fertileStart: lastPeriodDate.add(Duration(days: (cycleLength ~/ 2) - 3)),
+        fertileEnd: lastPeriodDate.add(Duration(days: (cycleLength ~/ 2) + 3)),
+        phase: 'Menstrual',
+      );
+    }
+
     final cyclesElapsed = daysSince ~/ cycleLength;
     final nextPeriodDate = lastPeriodDate.add(
       Duration(days: cycleLength * (cyclesElapsed + 1)),
     );
+
+    // Correct calculation for days until next period remaining in current cycle
     final daysUntilNextPeriod = cycleLength - (daysSince % cycleLength);
-    final ovulation = nextPeriodDate.subtract(Duration(days: cycleLength ~/ 2));
+
+    // Ovulation is typically 14 days before the *next* expected period
+    final ovulation = nextPeriodDate.subtract(const Duration(days: 14));
     final fertileStart = ovulation.subtract(const Duration(days: 3));
     final fertileEnd = ovulation.add(const Duration(days: 3));
 
-    // Phase based on same lastPeriodDate
-    final cycleDay = (daysSince % cycleLength) + 1;
+    // Phase calculation
+    // Derive cycle day directly from the remaining days to guarantee they always add up correctly to the cycle length
+    final cycleDay = cycleLength - daysUntilNextPeriod + 1;
     String phase;
-    if (cycleDay <= 5) phase = 'Menstrual';
-    else if (cycleDay <= 11) phase = 'Follicular';
-    else if (cycleDay <= 17) phase = 'Ovulation';
-    else phase = 'Luteal';
+    if (cycleDay <= 5) {
+      phase = 'Menstrual';
+    } else if (cycleDay <= 11) {
+      phase = 'Follicular';
+    } else if (cycleDay <= 17) {
+      phase = 'Ovulation';
+    } else {
+      phase = 'Luteal';
+    }
 
     return _CycleData(
       lastPeriodDate: lastPeriodDate,
@@ -212,7 +235,6 @@ class _HomeScreenState extends State<HomeScreen>
           final cycle = _resolveCycleData(
             logDate: periodProvider.latestLog?.startDate,
             profileDate: profile.lastPeriodDate,
-            logCycleLength: periodProvider.latestLog?.cycleLength,
             profileCycleLength: profile.cycleLength,
           );
 
@@ -251,7 +273,7 @@ class _HomeScreenState extends State<HomeScreen>
                       borderRadius: BorderRadius.circular(12)),
                   child: ListTile(
                     title: Text(
-                      _getCycleDayText(cycle.lastPeriodDate, cycle.cycleLength),
+                      _getCycleDayText(cycle.cycleLength, cycle.daysUntilNextPeriod),
                       style: AppTextStyles.smallTextRegular(context),
                     ),
                     subtitle: Column(
@@ -380,7 +402,7 @@ class _HomeScreenState extends State<HomeScreen>
                         Icon(Icons.calendar_today,
                             color: color.primary, size: 16),
                         const SizedBox(width: 4),
-                        Text('$formattedNextPeriod • $periodStatus',
+                        Text('$formattedNextPeriod • in ${cycle.daysUntilNextPeriod} days',
                             style: TextStyle(color: Colors.grey[700])),
                       ],
                     ),
@@ -430,9 +452,9 @@ class _HomeScreenState extends State<HomeScreen>
     return 'Ovulation was ${difference.abs()} days ago';
   }
 
-  String _getCycleDayText(DateTime lastPeriod, int cycleLen) {
-    final daysSinceLastPeriod = DateTime.now().difference(lastPeriod).inDays;
-    final dayOfCycle = (daysSinceLastPeriod % cycleLen) + 1;
+  String _getCycleDayText(int cycleLen, int daysUntilNextPeriod) {
+    // Derive the current cycle day directly from the synchronized remaining days
+    final dayOfCycle = cycleLen - daysUntilNextPeriod + 1;
     return 'Day $dayOfCycle of $cycleLen-day cycle';
   }
 

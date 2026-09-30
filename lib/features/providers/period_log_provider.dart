@@ -361,36 +361,22 @@ class PeriodLogProvider with ChangeNotifier {
   }
 
   /// 🔑 Get effective cycle length (calculated, default, or 28)
+  /// 🔑 Get effective cycle length (prioritize user profile default if logs don't have a valid custom length)
   int _getEffectiveCycleLength() {
-    final calculated = _getLastCalculatedCycleLength();
-    final effective = calculated ?? _defaultCycleLength;
-    if (kDebugMode) {
-      print('📊 Cycle Length - Calculated: $calculated, Default: $_defaultCycleLength, Effective: $effective');
+    // If the latest log has its own cycle length, use it; otherwise fallback to profile default
+    if (_logs.isNotEmpty && _logs.first.cycleLength != null && _logs.first.cycleLength! > 0) {
+      return _logs.first.cycleLength!;
     }
-    return effective;
+    return _defaultCycleLength;
   }
 
   /// 🔑 Computed: Predicted next period (auto-advances monthly)
   DateTime? get predictedNextPeriod {
-    if (latestLog == null) {
-      if (kDebugMode) print('⚠️ No latest log found');
-      return null;
-    }
-
-    if (latestLog!.startDate == null) {
-      if (kDebugMode) print('⚠️ Latest log has no start date');
-      return null;
-    }
+    if (_logs.isEmpty || _logs.first.startDate == null) return null;
 
     final cycleLength = _getEffectiveCycleLength();
-    DateTime predicted = latestLog!.startDate!.add(Duration(days: cycleLength));
+    DateTime predicted = _logs.first.startDate.add(Duration(days: cycleLength));
     final today = DateTime.now();
-
-    if (kDebugMode) {
-      print('📅 Latest Period: ${latestLog!.startDate}');
-      print('📅 Initial Prediction: $predicted');
-      print('📅 Today: $today');
-    }
 
     // Keep adding cycle length until we get a future date
     int iterations = 0;
@@ -399,13 +385,45 @@ class PeriodLogProvider with ChangeNotifier {
       iterations++;
     }
 
-    if (kDebugMode) {
-      print('📅 Final Prediction (after $iterations iterations): $predicted');
-      print('📅 Days until next period: ${predicted.difference(today).inDays}');
-    }
-
     return predicted;
   }
+
+  /// 🔑 Computed: Predicted next period (auto-advances monthly)
+  // DateTime? get predictedNextPeriod {
+  //   if (latestLog == null) {
+  //     if (kDebugMode) print('⚠️ No latest log found');
+  //     return null;
+  //   }
+  //
+  //   if (latestLog!.startDate == null) {
+  //     if (kDebugMode) print('⚠️ Latest log has no start date');
+  //     return null;
+  //   }
+  //
+  //   final cycleLength = _getEffectiveCycleLength();
+  //   DateTime predicted = latestLog!.startDate!.add(Duration(days: cycleLength));
+  //   final today = DateTime.now();
+  //
+  //   if (kDebugMode) {
+  //     print('📅 Latest Period: ${latestLog!.startDate}');
+  //     print('📅 Initial Prediction: $predicted');
+  //     print('📅 Today: $today');
+  //   }
+  //
+  //   // Keep adding cycle length until we get a future date
+  //   int iterations = 0;
+  //   while (predicted.isBefore(today) && iterations < 100) {
+  //     predicted = predicted.add(Duration(days: cycleLength));
+  //     iterations++;
+  //   }
+  //
+  //   if (kDebugMode) {
+  //     print('📅 Final Prediction (after $iterations iterations): $predicted');
+  //     print('📅 Days until next period: ${predicted.difference(today).inDays}');
+  //   }
+  //
+  //   return predicted;
+  // }
 
   /// 🔑 Computed: Predicted ovulation (mid-cycle, synced with next period)
   DateTime? get predictedOvulation {
