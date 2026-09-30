@@ -213,11 +213,15 @@ class PeriodLogProvider with ChangeNotifier {
   String _getPrefsKey(String uid) => "${uid}_period_logs";
 
   /// 🔄 Sort logs and recalculate cycle lengths
+  /// 🔄 Sort logs and recalculate cycle lengths dynamically
   void _sortAndRecalculate() {
     _logs.sort((a, b) => b.startDate.compareTo(a.startDate)); // newest first
 
     for (int i = 0; i < _logs.length; i++) {
-      if (i < _logs.length - 1) {
+      if (i == 0 && _logs.length > 1) {
+        // 🔑 The newest log takes the cycle length of the most recent gap (between log 0 and log 1)
+        _logs[i].cycleLength = _logs[0].startDate.difference(_logs[1].startDate).inDays;
+      } else if (i < _logs.length - 1) {
         // Gap between this log and the next older one
         _logs[i].cycleLength =
             _logs[i].startDate.difference(_logs[i + 1].startDate).inDays;
