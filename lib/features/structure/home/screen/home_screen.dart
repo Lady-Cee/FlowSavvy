@@ -371,7 +371,7 @@ class _HomeScreenState extends State<HomeScreen>
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'Last Period Started on ${DateFormat('MMMM d yyyy').format(cycle.lastPeriodDate)}',
+                              'Last period start date - ${DateFormat('MMMM d yyyy').format(cycle.lastPeriodDate)}',
                               textAlign: TextAlign.center,
                               style: AppTextStyles.semiBold(context)
                                   .copyWith(fontSize: 9),
