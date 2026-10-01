@@ -52,6 +52,31 @@ class _PeriodLogScreenState extends State<PeriodLogScreen> {
     }
   }
 
+  int? _editingIndex; // Tracks the index of the log currently being edited
+
+  void _startEditing(int index, PeriodLog log) {
+    setState(() {
+      _editingIndex = index;
+      _startDate = log.startDate;
+      _endDate = log.endDate;
+      _flowIntensity = log.flowIntensity;
+      _noteController.text = log.note ?? '';
+    });
+
+    // Optional: Scroll smoothly back to the top so the user sees the form populated
+    // (You can also leave this out if they are already looking at it)
+  }
+
+  void _cancelEditing() {
+    setState(() {
+      _editingIndex = null;
+      _startDate = null;
+      _endDate = null;
+      _flowIntensity = null;
+      _noteController.clear();
+    });
+  }
+
   void _savePeriodLog(BuildContext context) {
     if (_startDate == null || _endDate == null || _flowIntensity == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -73,21 +98,39 @@ class _PeriodLogScreenState extends State<PeriodLogScreen> {
       return;
     }
 
-    final newLog = PeriodLog(
-      startDate: _startDate!,
-      endDate: _endDate!,
-      flowIntensity: _flowIntensity!,
-      note: _noteController.text.trim(),
-    );
+    final provider = Provider.of<PeriodLogProvider>(context, listen: false);
 
-    Provider.of<PeriodLogProvider>(context, listen: false).addLog(newLog);
+    if (_editingIndex != null) {
+      // 🔑 UPDATE EXISTING LOG
+      final updatedLog = PeriodLog(
+        startDate: _startDate!,
+        endDate: _endDate!,
+        flowIntensity: _flowIntensity!,
+        note: _noteController.text.trim(),
+      );
+      provider.updateLog(_editingIndex!, updatedLog);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Period log saved!')),
-    );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Period log updated!')),
+      );
+    } else {
+      // 🔑 SAVE NEW LOG
+      final newLog = PeriodLog(
+        startDate: _startDate!,
+        endDate: _endDate!,
+        flowIntensity: _flowIntensity!,
+        note: _noteController.text.trim(),
+      );
+      provider.addLog(newLog);
 
-    // Clear form
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Period log saved!')),
+      );
+    }
+
+    // Reset form and editing state
     setState(() {
+      _editingIndex = null;
       _startDate = null;
       _endDate = null;
       _flowIntensity = null;
@@ -313,31 +356,47 @@ class _PeriodLogScreenState extends State<PeriodLogScreen> {
                           ),
                         ],
                       ),
-                      trailing: IconButton(
-                        icon: Icon(Icons.delete, color: Colors.red),
-                        onPressed: () {
-                          final provider =
-                          Provider.of<PeriodLogProvider>(
-                              context,
-                              listen: false);
-                          final deletedLog = periodLogs[index];
-                          provider.removeLog(index);
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.edit, color: Colors.blue),
+                            onPressed: () => _startEditing(index, log),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.delete, color: Colors.red),
+                            onPressed: () {
+                              final provider = Provider.of<PeriodLogProvider>(context, listen: false);
+                              final deletedLog = periodLogs[index];
+                              provider.removeLog(index);
 
-                          ScaffoldMessenger.of(context)
-                              .showSnackBar(
-                            SnackBar(
-                              content: Text("Log deleted"),
-                              backgroundColor: appColor.primary,
-                              action: SnackBarAction(
-                                label: "Undo",
-                                textColor: Colors.white,
-                                onPressed: () {
-                                  provider.addLog(deletedLog);
-                                },
-                              ),
-                            ),
-                          );
-                        },
+                              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+                              // 🔑 Show the snackbar and capture its controller
+                              final controller = ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text("Log deleted"),
+                                  backgroundColor: appColor.primary,
+                                  duration: const Duration(seconds: 4),
+                                  action: SnackBarAction(
+                                    label: "Undo",
+                                    textColor: Colors.white,
+                                    onPressed: () {
+                                      provider.addLog(deletedLog);
+                                    },
+                                  ),
+                                ),
+                              );
+
+                              // 🔑 Force-dismiss after 4 seconds as a reliable backup for Flutter Web
+                              Future.delayed(const Duration(seconds: 4), () {
+                                try {
+                                  controller.close();
+                                } catch (_) {}
+                              });
+                            },
+                          ),
+                        ],
                       ),
                     ),
                   );

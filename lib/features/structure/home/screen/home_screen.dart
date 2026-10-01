@@ -202,7 +202,7 @@ class _HomeScreenState extends State<HomeScreen>
             child: CircleAvatar(
               child: IconButton(
                 onPressed: () => logout(context),
-                icon: const Icon(Icons.person),
+                icon: const Icon(Icons.logout_outlined),
               ),
             ),
           ),

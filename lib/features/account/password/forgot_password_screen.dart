@@ -6,6 +6,7 @@ import '../../providers/auth_provider.dart';
 import '../../utils/app_text_styles.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/long_custom_button.dart';
+import '../login/login_signup_screen.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -17,22 +18,76 @@ class ForgotPasswordScreen extends StatefulWidget {
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final emailController = TextEditingController();
 
-  void resetPassword()async{
+  void resetPassword() async {
     String email = emailController.text.trim();
+
+    // Simple validation if the field is empty
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Please enter your email address"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final message = await authProvider.resetPassword(email);
 
+    if (!mounted) return;
+
     if (message == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Password reset email sent to $email!"), backgroundColor: Theme.of(context).colorScheme.primary,),
+      // 🔑 Show custom theme-matched dialog popup
+      showDialog(
+        context: context,
+        barrierDismissible: false, // Force user to tap OK
+        builder: (BuildContext dialogContext) {
+          final primaryColor = Theme.of(context).colorScheme.primary;
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: Row(
+              children: [
+                Icon(Icons.mark_email_read_outlined, color: primaryColor),
+                const SizedBox(width: 10),
+                Text(
+                  "Check Your Inbox",
+                  style: AppTextStyles.mediumTextSemiBold(context),
+                ),
+              ],
+            ),
+            content: Text(
+              "Password reset email has been sent to:\n\n$email\n\nPlease check your inbox and follow the instructions to reset your password.",
+              style: AppTextStyles.smallTextRegular(context),
+            ),
+            actions: [
+              LongCustomButton(
+                onTap: () {
+                  Navigator.of(dialogContext).pop(); // Close dialog
+                  emailController.clear();
+                  // Optional: Navigate back to login screen after success
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => LoginSignUpScreen()),
+                  );
+                },
+                title: 'OK',
+              ),
+            ],
+          );
+        },
       );
-      emailController.clear();
     } else {
+      // Show error snackbar if something went wrong
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message),  backgroundColor: Theme.of(context).colorScheme.primary,),
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.red,
+        ),
       );
     }
-
   }
 
   @override
