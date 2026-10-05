@@ -25,10 +25,33 @@ class _SignupScreenState extends State<SignupScreen> {
 
   bool _obscureText = true;
   bool _obscureText1 = true;
+  String? _selectedLga;
   SchoolData? _selectedSchool;
 
+  // ignore: unused_element
   void _toggleVisibility() => setState(() => _obscureText = !_obscureText);
+  // ignore: unused_element
   void _toggleVisibility1() => setState(() => _obscureText1 = !_obscureText1);
+
+  @override
+  void dispose() {
+    firstNameController.dispose();
+    surnameController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    confirmPasswordController.dispose();
+    contactNameController.dispose();
+    contactPhoneController.dispose();
+    super.dispose();
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: const TextStyle(color: Colors.red)),
+      ),
+    );
+  }
 
   void signUpUser() async {
     final firstName = firstNameController.text.trim();
@@ -42,49 +65,28 @@ class _SignupScreenState extends State<SignupScreen> {
         email.isEmpty ||
         password.isEmpty ||
         confirmPassword.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please fill all fields',
-              style: TextStyle(color: Colors.red)),
-        ),
-      );
+      _showError('Please fill all fields');
+      return;
+    }
+
+    if (_selectedLga == null) {
+      _showError('Please select an LGA');
       return;
     }
 
     if (_selectedSchool == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select a school',
-              style: TextStyle(color: Colors.red)),
-        ),
-      );
-      return;
-    }
-
-    if (_selectedSchool == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a school',
-            style: TextStyle(color: Colors.red))),
-      );
+      _showError('Please select a school');
       return;
     }
 
     if (contactNameController.text.trim().isEmpty ||
         contactPhoneController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter contact name and phone number',
-            style: TextStyle(color: Colors.red))),
-      );
+      _showError('Please enter contact name and phone number');
       return;
     }
 
     if (password != confirmPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Passwords do not match',
-              style: TextStyle(color: Colors.red)),
-        ),
-      );
+      _showError('Passwords do not match');
       return;
     }
 
@@ -99,6 +101,8 @@ class _SignupScreenState extends State<SignupScreen> {
       contactNameController.text.trim(),
       contactPhoneController.text.trim(),
     );
+
+    if (!mounted) return;
 
     if (result == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -165,47 +169,65 @@ class _SignupScreenState extends State<SignupScreen> {
               ),
               const SizedBox(height: 20),
 
-              // School dropdown
+              // LGA dropdown
+              DropdownButtonFormField<String>(
+                value: _selectedLga,
+                isExpanded: true,
+                menuMaxHeight: 350,
+                decoration: InputDecoration(
+                  hintText: 'Select LGA',
+                  prefixIcon: const Icon(Icons.location_on),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                items: kLgas
+                    .map((lga) => DropdownMenuItem<String>(
+                  value: lga,
+                  child: Text(lga),
+                ))
+                    .toList(),
+                onChanged: (value) => setState(() {
+                  _selectedLga = value;
+                  _selectedSchool = null; // reset school when LGA changes
+                }),
+              ),
+              const SizedBox(height: 20),
+
+              // School dropdown (only schools in the chosen LGA)
               DropdownButtonFormField<SchoolData>(
+                key: ValueKey(_selectedLga), // clean reset when LGA changes
                 value: _selectedSchool,
                 isExpanded: true,
+                menuMaxHeight: 350,
                 decoration: InputDecoration(
-                  hintText: 'Select School',
+                  hintText:
+                  _selectedLga == null ? 'Select LGA first' : 'Select School',
                   prefixIcon: const Icon(Icons.school),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                items: kSchools
-                    .map((school) => DropdownMenuItem(
+                items: _selectedLga == null
+                    ? <DropdownMenuItem<SchoolData>>[]
+                    : schoolsInLga(_selectedLga!)
+                    .map((school) => DropdownMenuItem<SchoolData>(
                   value: school,
-                  child: Text(school.name, overflow: TextOverflow.ellipsis,),
+                  child: Text(
+                    school.name,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ))
                     .toList(),
-                onChanged: (value) => setState(() => _selectedSchool = value),
+                onChanged: _selectedLga == null
+                    ? null
+                    : (value) => setState(() => _selectedSchool = value),
               ),
 
-              // Show LGA and contact info once school is selected
+              // Show contact info once a school is selected
               if (_selectedSchool != null) ...[
                 const SizedBox(height: 16),
-                // LGA auto-fills, read only
-                Card(
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.location_on, size: 16, color: Colors.grey),
-                        const SizedBox(width: 6),
-                        Text('LGA: ${_selectedSchool!.lga}',
-                            style: const TextStyle(fontSize: 13)),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                // Contact name — user types this
+                // Contact name - user types this
                 CustomTextField(
                   hintText: 'Contact Name',
                   controller: contactNameController,
@@ -214,7 +236,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   optionalLeadingIcon: Icons.person_outline,
                 ),
                 const SizedBox(height: 12),
-                // Contact phone — user types this
+                // Contact phone - user types this
                 CustomTextField(
                   hintText: 'Contact Phone Number',
                   controller: contactPhoneController,
