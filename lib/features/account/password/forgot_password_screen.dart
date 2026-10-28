@@ -109,11 +109,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           optionalLeadingIcon: Icons.email,
         ),
           const SizedBox(height: 20),
-            // SizedBox(height: 20),
-            // ElevatedButton(
-            //   onPressed: () => resetPassword(),
-            //   child: Text("Reset Password"),
-            // ),
             LongCustomButton(
               onTap: () => resetPassword(),
               title: 'Reset Password',

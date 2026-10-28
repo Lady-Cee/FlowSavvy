@@ -27,8 +27,9 @@ class AuthProvider with ChangeNotifier {
       String schoolName,
       String schoolLga,
       String contactName,
-      String contactPhone,
-      ) async {
+      String contactPhone, {
+        bool inSchool = true,
+      }) async {
     return await _authService.signUp(
       email,
       password,
@@ -38,8 +39,11 @@ class AuthProvider with ChangeNotifier {
       schoolLga,
       contactName,
       contactPhone,
+      inSchool: inSchool,
     );
   }
+
+
   Future<String?> resetPassword(String email) async {
     return await _authService.resetPassword(email);
   }

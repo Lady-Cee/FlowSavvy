@@ -19,10 +19,7 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
   final List<Widget> _screens = [
     HomeScreen(),
     PeriodMattersScreen(),
-    //SymptomLogScreen(),
     EducationalResourceScreen(),
-    //UserProfileScreen(),
-    //PeriodLogScreen(),
     CommunitySupportScreen(),
   ];
 
@@ -53,18 +50,10 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
             icon: Icon(Icons.water_drop),
             label: 'PeriodMatters',
           ),
-          // BottomNavigationBarItem(
-          //   icon: Icon(Icons.sign_language),
-          //   label: 'Symptom Log',
-          // ),
           BottomNavigationBarItem(
             icon: Icon(Icons.menu_book_outlined),
             label: 'Educational',
           ),
-          // BottomNavigationBarItem(
-          //   icon: Icon(Icons.person),
-          //   label: 'Profile',
-          // ),
 
           BottomNavigationBarItem(
             icon: Icon(Icons.people),

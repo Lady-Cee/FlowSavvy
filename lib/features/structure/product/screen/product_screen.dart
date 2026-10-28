@@ -23,7 +23,36 @@ class ProductScreen extends StatelessWidget {
           return Card(
             margin: EdgeInsets.all(10),
             child: ListTile(
-              leading: Image.network(product.imageUrl, width: 60, fit: BoxFit.cover),
+              leading: Image.network(
+              product.imageUrl,
+              width: 60,
+              height: 60,
+              fit: BoxFit.cover,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+
+                return const SizedBox(
+                  width: 60,
+                  height: 60,
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                    ),
+                  ),
+                );
+              },
+              errorBuilder: (context, error, stackTrace) {
+                return const SizedBox(
+                  width: 60,
+                  height: 60,
+                  child: Icon(
+                    Icons.shopping_bag_outlined,
+                    size: 35,
+                    color: Colors.pinkAccent,
+                  ),
+                );
+              },
+            ),
               title: Text(product.name),
               subtitle: Text(product.description),
               trailing: Icon(Icons.arrow_forward),

@@ -8,6 +8,13 @@ class SchoolData {
   });
 }
 
+const String kNotInSchoolLabel = 'Not in school';
+
+const SchoolData kNotInSchool =
+SchoolData(name: kNotInSchoolLabel, lga: kNotInSchoolLabel);
+
+bool isNotInSchool(SchoolData? s) => s?.name == kNotInSchoolLabel;
+
 const List<SchoolData> kSchools = [
   // ===== Aguata =====
   SchoolData(name: 'Urban Girls\' Secondary School Ekwulobia', lga: 'Aguata'),

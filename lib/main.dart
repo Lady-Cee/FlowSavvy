@@ -51,12 +51,21 @@ import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load();
-  Gemini.init(apiKey: dotenv.env['GEMINI_API_KEY']!);
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  try {
+    await dotenv.load(fileName: 'app.env');
+    final key = dotenv.env['GEMINI_API_KEY'];
+    if (key != null && key.isNotEmpty) {
+      Gemini.init(apiKey: key);
+    }
+  } catch (e) {
+    debugPrint('Env load failed: $e');
+  }
+
   runApp(const MyApp());
 }
 

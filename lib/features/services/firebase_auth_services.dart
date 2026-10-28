@@ -14,7 +14,9 @@ class FireBaseAuthService {
       String schoolName,
       String schoolLga,
       String contactName,
-      String contactPhone,
+      String contactPhone,{
+        bool inSchool = true,
+      }
       ) async {
     try {
       final userCredential = await _auth.createUserWithEmailAndPassword(
@@ -30,7 +32,10 @@ class FireBaseAuthService {
         'firstName': firstName,
         'surname': surname,
         'email': email,
-        'schoolName': schoolName,
+        'inSchool': inSchool,                        // new
+        'schoolName': inSchool ? schoolName : null,
+        'contactName': contactName,
+        'contactPhone': contactPhone,
         'createdAt': now,
       });
 

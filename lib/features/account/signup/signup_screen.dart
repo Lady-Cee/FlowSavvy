@@ -60,6 +60,8 @@ class _SignupScreenState extends State<SignupScreen> {
     final password = passwordController.text;
     final confirmPassword = confirmPasswordController.text;
 
+    final notInSchool = isNotInSchool(_selectedSchool);
+
     if (firstName.isEmpty ||
         surname.isEmpty ||
         email.isEmpty ||
@@ -96,10 +98,12 @@ class _SignupScreenState extends State<SignupScreen> {
       password,
       firstName,
       surname,
-      _selectedSchool!.name,
-      _selectedSchool!.lga,
+      notInSchool ? 'Not in school' : _selectedSchool!.name,  // changed
+      _selectedLga!,                                          // changed (was _selectedSchool!.lga)
       contactNameController.text.trim(),
       contactPhoneController.text.trim(),
+      inSchool: !notInSchool,
+
     );
 
     if (!mounted) return;
@@ -122,6 +126,8 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final notInSchoolSelected = isNotInSchool(_selectedSchool);   // add this
+
     return Scaffold(
       body: LayoutBuilder(
         builder: (context, constraints) {
@@ -181,15 +187,21 @@ class _SignupScreenState extends State<SignupScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                items: kLgas
+                items: [kNotInSchoolLabel, ...kLgas]
                     .map((lga) => DropdownMenuItem<String>(
                   value: lga,
-                  child: Text(lga),
+                  child: Text(
+                    lga,
+                    style: lga == kNotInSchoolLabel
+                        ? const TextStyle(fontWeight: FontWeight.w600)
+                        : null,
+                  ),
                 ))
                     .toList(),
                 onChanged: (value) => setState(() {
                   _selectedLga = value;
-                  _selectedSchool = null; // reset school when LGA changes
+                  // Not in school -> school is filled in automatically; otherwise reset
+                  _selectedSchool = value == kNotInSchoolLabel ? kNotInSchool : null;
                 }),
               ),
               const SizedBox(height: 20),
@@ -210,17 +222,21 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
                 items: _selectedLga == null
                     ? <DropdownMenuItem<SchoolData>>[]
+                    : _selectedLga == kNotInSchoolLabel
+                    ? [
+                  const DropdownMenuItem<SchoolData>(
+                    value: kNotInSchool,
+                    child: Text(kNotInSchoolLabel),
+                  ),
+                ]
                     : schoolsInLga(_selectedLga!)
                     .map((school) => DropdownMenuItem<SchoolData>(
                   value: school,
-                  child: Text(
-                    school.name,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  child: Text(school.name, overflow: TextOverflow.ellipsis),
                 ))
                     .toList(),
-                onChanged: _selectedLga == null
-                    ? null
+                onChanged: (_selectedLga == null || _selectedLga == kNotInSchoolLabel)
+                    ? null // disabled: nothing to choose
                     : (value) => setState(() => _selectedSchool = value),
               ),
 
@@ -229,7 +245,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 const SizedBox(height: 16),
                 // Contact name - user types this
                 CustomTextField(
-                  hintText: 'Contact Name',
+                  hintText: notInSchoolSelected ? 'Parent/Guardian Name' : 'Contact Name',
                   controller: contactNameController,
                   isObscure: false,
                   isOptionalLeadingIcon: true,
@@ -238,7 +254,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 const SizedBox(height: 12),
                 // Contact phone - user types this
                 CustomTextField(
-                  hintText: 'Contact Phone Number',
+                  hintText: notInSchoolSelected ? 'Parent/Guardian Phone Number' : 'Contact Phone Number',
                   controller: contactPhoneController,
                   isObscure: false,
                   isOptionalLeadingIcon: true,

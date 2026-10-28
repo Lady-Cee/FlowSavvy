@@ -92,7 +92,7 @@ flutter:
    - assets/images/
    - assets/images/splash_screen/
    - assets/images/onboarding/
-   - .env
+   - app.env
    - assets/icons/
    - assets/fonts/
 
