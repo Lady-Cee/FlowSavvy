@@ -22,9 +22,11 @@ class MentalHealthProfessionalScreen extends StatelessWidget {
             ListTile(
               leading: Image.network(
                 professional.imageUrl,
+                key: ValueKey(professional.imageUrl),
                 width: 60,
                 height: 60,
                 fit: BoxFit.cover,
+                webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
                 loadingBuilder: (context, child, loadingProgress) {
                   if (loadingProgress == null) return child;
 
@@ -61,18 +63,12 @@ class MentalHealthProfessionalScreen extends StatelessWidget {
                   // Text('Contact: ${admin.contactInfo}'),
                 ],
               ),
-              trailing: Icon(Icons.arrow_forward),
+              trailing: kIsWeb
+                  ? const Icon(Icons.chat, color: Color(0xFF25D366), size: 30)
+                  : const Icon(Icons.arrow_forward),
               onTap: () async {
                 if (kIsWeb) {
-                  // Web only: open WhatsApp in a new tab
-                  var digits = professional.contactInfo.replaceAll(RegExp(r'[^0-9]'), '');
-                  if (digits.startsWith('0')) digits = '234${digits.substring(1)}';
-
-                  await launchUrl(
-                    Uri.parse('https://wa.me/$digits'),
-                    mode: LaunchMode.externalApplication,
-                    webOnlyWindowName: '_blank',
-                  );
+                  await _openWhatsApp(professional.contactPhoneNumber);
                   return;
                 }
 
@@ -93,6 +89,17 @@ class MentalHealthProfessionalScreen extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+
+  Future<void> _openWhatsApp(String contact) async {
+    var digits = contact.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.startsWith('0')) digits = '234${digits.substring(1)}';
+
+    await launchUrl(
+      Uri.parse('https://wa.me/$digits'),
+      mode: LaunchMode.externalApplication,
+      webOnlyWindowName: '_blank',
     );
   }
 }

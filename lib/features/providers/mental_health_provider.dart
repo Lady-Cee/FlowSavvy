@@ -10,7 +10,9 @@ class MentalHealthProvider with ChangeNotifier {
       qualification: 'Clinical Psychologist',
       imageUrl: 'https://img.freepik.com/free-photo/medium-shot-smiley-woman-teaching_23-2149272223.jpg',
       bio: 'Specializes in cognitive behavioral therapy and trauma recovery.',
-      contactInfo: '08038849601',
+      contactInfo: 'JohnDoe@gmail.com',
+      contactPhoneNumber: '08038849601',
+
     ),
     // Add more professionals as needed
   ];
