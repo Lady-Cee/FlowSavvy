@@ -10,7 +10,7 @@ class CounsellorProvider with ChangeNotifier {
       expertise: 'Stress Management',
       imageUrl: 'https://img.freepik.com/free-photo/medium-shot-smiley-woman-teaching_23-2149272223.jpg',
       bio: 'Helping individuals manage stress and anxiety effectively.',
-      contactInfo: 'john.doe@example.com',
+      contactInfo: '08038849601',
     ),
     // Add more counsellors as needed
   ];

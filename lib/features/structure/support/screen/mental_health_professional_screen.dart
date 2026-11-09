@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../providers/mental_health_provider.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class MentalHealthProfessionalScreen extends StatelessWidget {
   @override
@@ -62,6 +63,20 @@ class MentalHealthProfessionalScreen extends StatelessWidget {
               ),
               trailing: Icon(Icons.arrow_forward),
               onTap: () async {
+                if (kIsWeb) {
+                  // Web only: open WhatsApp in a new tab
+                  var digits = professional.contactInfo.replaceAll(RegExp(r'[^0-9]'), '');
+                  if (digits.startsWith('0')) digits = '234${digits.substring(1)}';
+
+                  await launchUrl(
+                    Uri.parse('https://wa.me/$digits'),
+                    mode: LaunchMode.externalApplication,
+                    webOnlyWindowName: '_blank',
+                  );
+                  return;
+                }
+
+                // Mobile: your original code, unchanged
                 final url = Uri.parse(professional.imageUrl);
 
                 if (await launchUrl(url, mode: LaunchMode.inAppWebView)) {

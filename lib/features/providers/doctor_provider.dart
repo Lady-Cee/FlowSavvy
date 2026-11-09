@@ -10,7 +10,7 @@ class DoctorProvider with ChangeNotifier {
       specialization: 'Gynecologist',
       imageUrl: 'https://img.freepik.com/free-photo/medium-shot-smiley-woman-teaching_23-2149272223.jpg',
       bio: 'Experienced in women\'s health and reproductive care.',
-      contactInfo: 'dr.jane@example.com',
+      contactInfo: '08038849601',
     ),
     // Add more doctors as needed
   ];
