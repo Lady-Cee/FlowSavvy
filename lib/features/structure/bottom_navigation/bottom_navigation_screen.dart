@@ -1,12 +1,13 @@
 import 'package:flow_savvy/features/structure/educational/screen/educational_resource_screen.dart';
 import 'package:flow_savvy/features/structure/home/screen/home_screen.dart';
 // import 'package:flow_savvy/features/structure/period/screen/period_log_screen.dart';
-import 'package:flow_savvy/features/structure/support/screen/community_support_screen.dart';
+//import 'package:flow_savvy/features/structure/support/screen/community_support_screen.dart';
 //import 'package:flow_savvy/features/structure/symptom/screen/symptom_log_screen.dart';
 //import 'package:flow_savvy/features/structure/user/screen/user_profile_screen.dart';
 import 'package:flutter/material.dart';
 
 import '../period_matters/period_matters_screen.dart';
+import '../support/community_support/screen/community_support_screen.dart';
 
 class BottomNavigationScreen extends StatefulWidget {
   @override

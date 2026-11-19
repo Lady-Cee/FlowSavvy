@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../providers/counsellor_provider.dart';
+import '../../../../providers/counsellor_provider.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 class CounsellorScreen extends StatelessWidget {
@@ -20,37 +20,33 @@ class CounsellorScreen extends StatelessWidget {
             margin: EdgeInsets.all(10),
             child:
             ListTile(
-              leading: Image.network(
-              counsellor.imageUrl,
-              width: 60,
-              height: 60,
-              fit: BoxFit.cover,
-                webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-
-                return const SizedBox(
-                  width: 60,
-                  height: 60,
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                    ),
+              leading: SizedBox.square(
+                dimension: 50,
+                child: ClipOval(
+                  child: Image.asset(
+                    counsellor.imageUrl,
+                    key: ValueKey(counsellor.imageUrl),
+                    width: 50,
+                    height: 50,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        width: 50,
+                        height: 50,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.pinkAccent,
+                        ),
+                        child: const Icon(
+                          Icons.person_outline,
+                          size: 30,
+                          color: Colors.white,
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-              errorBuilder: (context, error, stackTrace) {
-                return const SizedBox(
-                  width: 60,
-                  height: 60,
-                  child: Icon(
-                    Icons.person_outline,
-                    size: 35,
-                    color: Colors.pinkAccent,
-                  ),
-                );
-              },
-            ),
+                ),
+              ),
               title: Text(counsellor.name),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

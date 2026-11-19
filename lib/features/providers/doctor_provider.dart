@@ -8,7 +8,7 @@ class DoctorProvider with ChangeNotifier {
       id: '1',
       name: 'Dr. Jane Smith',
       specialization: 'Gynecologist',
-      imageUrl: 'https://img.freepik.com/free-photo/medium-shot-smiley-woman-teaching_23-2149272223.jpg',
+      imageUrl: 'assets/images/Cyn.png',
       bio: 'Experienced in women\'s health and reproductive care.',
       contactInfo: 'Johndoe@gmail.com',
       contactPhoneNumber: '08038849601'

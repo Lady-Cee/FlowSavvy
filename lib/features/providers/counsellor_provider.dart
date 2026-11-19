@@ -8,7 +8,7 @@ class CounsellorProvider with ChangeNotifier {
       id: '1',
       name: 'Mr. John Doe',
       expertise: 'Stress Management',
-      imageUrl: 'https://img.freepik.com/free-photo/medium-shot-smiley-woman-teaching_23-2149272223.jpg',
+      imageUrl: 'assets/images/Tinu.png',
       bio: 'Helping individuals manage stress and anxiety effectively.',
       contactInfo: 'Johndoe@yahoo.com',
       contactPhoneNumber: '08038849601'
