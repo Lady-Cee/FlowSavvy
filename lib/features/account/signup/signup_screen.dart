@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../../data/schools_data.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/is_login_state_provider.dart';
+import '../../providers/symptom_log_provider.dart';
+import '../../providers/user_profile_provider.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/long_custom_button.dart';
 
@@ -25,6 +27,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
   bool _obscureText = true;
   bool _obscureText1 = true;
+  bool _isLoading = false;
   String? _selectedLga;
   SchoolData? _selectedSchool;
 
@@ -54,6 +57,9 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   void signUpUser() async {
+    // Ignore extra taps while signing up
+    if (_isLoading) return;
+
     final firstName = firstNameController.text.trim();
     final surname = surnameController.text.trim();
     final email = emailController.text.trim();
@@ -92,41 +98,86 @@ class _SignupScreenState extends State<SignupScreen> {
       return;
     }
 
+    // Grab everything that needs context BEFORE any await
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final result = await authProvider.signUp(
-      email,
-      password,
-      firstName,
-      surname,
-      notInSchool ? 'Not in school' : _selectedSchool!.name,  // changed
-      _selectedLga!,                                          // changed (was _selectedSchool!.lga)
-      contactNameController.text.trim(),
-      contactPhoneController.text.trim(),
-      inSchool: !notInSchool,
+    final loginStateProvider =
+    Provider.of<IsLoginStateProvider>(context, listen: false);
+    final profileProvider =
+    Provider.of<UserProfileProvider>(context, listen: false);
+    final logProvider =
+    Provider.of<SymptomLogProvider>(context, listen: false);
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    final primaryColor = Theme.of(context).colorScheme.primary;
 
-    );
+    setState(() => _isLoading = true);
 
-    if (!mounted) return;
+    try {
+      final result = await authProvider.signUp(
+        email,
+        password,
+        firstName,
+        surname,
+        notInSchool ? 'Not in school' : _selectedSchool!.name, // changed
+        _selectedLga!, // changed (was _selectedSchool!.lga)
+        contactNameController.text.trim(),
+        contactPhoneController.text.trim(),
+        inSchool: !notInSchool,
+      );
 
-    if (result == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      if (!mounted) return;
+
+      // Sign up failed: show the error and stay on this screen
+      if (result != null) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(result, style: const TextStyle(color: Colors.red)),
+          ),
+        );
+        return;
+      }
+
+      // Account created. Log the user in straight away.
+      final loginError = await authProvider.login(email, password);
+
+      if (!mounted) return;
+
+      // Auto-login failed for some reason: fall back to the old behaviour
+      // (account exists, send them to the login screen).
+      if (loginError != null) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: const Text('Signup successful! Please log in.'),
+            backgroundColor: primaryColor,
+          ),
+        );
+        loginStateProvider.setLogin();
+        return;
+      }
+
+      // Same steps the login screen runs, so the home screen shows this
+      // user's data and not stale or empty data.
+      await profileProvider.loadUserProfile();
+      await logProvider.fetchLogs();
+
+      if (!mounted) return;
+
+      messenger.showSnackBar(
         SnackBar(
-          content: const Text('Signup successful! Please log in.'),
-          backgroundColor: Theme.of(context).colorScheme.primary,
+          content: const Text('Welcome! Your account has been created.'),
+          backgroundColor: primaryColor,
         ),
       );
-      Provider.of<IsLoginStateProvider>(context, listen: false).setLogin();
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text(result, style: const TextStyle(color: Colors.red))),
-      );
+
+      navigator.pushReplacementNamed('/home');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final notInSchoolSelected = isNotInSchool(_selectedSchool);   // add this
+    final notInSchoolSelected = isNotInSchool(_selectedSchool); // add this
 
     return Scaffold(
       body: LayoutBuilder(
@@ -201,7 +252,8 @@ class _SignupScreenState extends State<SignupScreen> {
                 onChanged: (value) => setState(() {
                   _selectedLga = value;
                   // Not in school -> school is filled in automatically; otherwise reset
-                  _selectedSchool = value == kNotInSchoolLabel ? kNotInSchool : null;
+                  _selectedSchool =
+                  value == kNotInSchoolLabel ? kNotInSchool : null;
                 }),
               ),
               const SizedBox(height: 20),
@@ -213,8 +265,9 @@ class _SignupScreenState extends State<SignupScreen> {
                 isExpanded: true,
                 menuMaxHeight: 350,
                 decoration: InputDecoration(
-                  hintText:
-                  _selectedLga == null ? 'Select LGA first' : 'Select School',
+                  hintText: _selectedLga == null
+                      ? 'Select LGA first'
+                      : 'Select School',
                   prefixIcon: const Icon(Icons.school),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -232,10 +285,12 @@ class _SignupScreenState extends State<SignupScreen> {
                     : schoolsInLga(_selectedLga!)
                     .map((school) => DropdownMenuItem<SchoolData>(
                   value: school,
-                  child: Text(school.name, overflow: TextOverflow.ellipsis),
+                  child: Text(school.name,
+                      overflow: TextOverflow.ellipsis),
                 ))
                     .toList(),
-                onChanged: (_selectedLga == null || _selectedLga == kNotInSchoolLabel)
+                onChanged:
+                (_selectedLga == null || _selectedLga == kNotInSchoolLabel)
                     ? null // disabled: nothing to choose
                     : (value) => setState(() => _selectedSchool = value),
               ),
@@ -245,7 +300,9 @@ class _SignupScreenState extends State<SignupScreen> {
                 const SizedBox(height: 16),
                 // Contact name - user types this
                 CustomTextField(
-                  hintText: notInSchoolSelected ? 'Parent/Guardian Name' : 'Contact Name',
+                  hintText: notInSchoolSelected
+                      ? 'Parent/Guardian Name'
+                      : 'Contact Name',
                   controller: contactNameController,
                   isObscure: false,
                   isOptionalLeadingIcon: true,
@@ -254,7 +311,9 @@ class _SignupScreenState extends State<SignupScreen> {
                 const SizedBox(height: 12),
                 // Contact phone - user types this
                 CustomTextField(
-                  hintText: notInSchoolSelected ? 'Parent/Guardian Phone Number' : 'Contact Phone Number',
+                  hintText: notInSchoolSelected
+                      ? 'Parent/Guardian Phone Number'
+                      : 'Contact Phone Number',
                   controller: contactPhoneController,
                   isObscure: false,
                   isOptionalLeadingIcon: true,
@@ -263,7 +322,9 @@ class _SignupScreenState extends State<SignupScreen> {
               ],
 
               const SizedBox(height: 40),
-              LongCustomButton(
+              _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : LongCustomButton(
                 onTap: signUpUser,
                 title: 'Sign Up',
               ),

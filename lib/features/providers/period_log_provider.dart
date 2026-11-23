@@ -204,7 +204,7 @@ class PeriodLogProvider with ChangeNotifier {
 
   /// 🔑 Set default cycle length (from user profile)
   void setDefaultCycleLength(int length) {
-    if (kDebugMode) print('🔄 Setting default cycle length to: $length');
+    // if (kDebugMode) print('🔄 Setting default cycle length to: $length');
     _defaultCycleLength = length;
     notifyListeners();
   }
@@ -247,7 +247,7 @@ class PeriodLogProvider with ChangeNotifier {
     _logs.clear();
     _logs.addAll(cachedJson.map((e) => PeriodLog.fromMap(jsonDecode(e))));
     _sortAndRecalculate();
-    if (kDebugMode) print('📝 Loaded ${_logs.length} period logs from cache');
+    // if (kDebugMode) print('📝 Loaded ${_logs.length} period logs from cache');
     notifyListeners();
 
     // Load from Firestore

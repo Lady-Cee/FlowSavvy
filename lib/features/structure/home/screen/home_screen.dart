@@ -16,21 +16,29 @@ import '../../../widgets/long_custom_button.dart';
 class _CycleData {
   final DateTime lastPeriodDate;
   final int cycleLength;
+  final int cycleDay;
   final int daysUntilNextPeriod;
+  final bool periodExpectedToday;
   final DateTime nextPeriodDate;
   final DateTime ovulation;
   final DateTime fertileStart;
   final DateTime fertileEnd;
+  final int fertileStartDay;
+  final int fertileEndDay;
   final String phase;
 
   _CycleData({
     required this.lastPeriodDate,
     required this.cycleLength,
+    required this.cycleDay,
     required this.daysUntilNextPeriod,
+    required this.periodExpectedToday,
     required this.nextPeriodDate,
     required this.ovulation,
     required this.fertileStart,
     required this.fertileEnd,
+    required this.fertileStartDay,
+    required this.fertileEndDay,
     required this.phase,
   });
 }
@@ -47,20 +55,21 @@ class _HomeScreenState extends State<HomeScreen>
   final AppStrings appStrings = AppStrings();
 
   late AnimationController _controller;
-  late Animation<double> _pulseAnimation;
+
+  // Accent colours used by the stat tiles
+  static const Color _violet = Color(0xFF8E5CF7);
+  static const Color _amber = Color(0xFFFFB020);
+  static const Color _teal = Color(0xFF14B8A6);
 
   @override
   void initState() {
     super.initState();
 
+    // Drives the soft "breathing" glow around the cycle ring
     _controller = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
     )..repeat(reverse: true);
-
-    _pulseAnimation = Tween<double>(begin: 0, end: 6).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final periodProvider = context.read<PeriodLogProvider>();
@@ -81,69 +90,99 @@ class _HomeScreenState extends State<HomeScreen>
 
   void logout(BuildContext context) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final profileProvider =
+    Provider.of<UserProfileProvider>(context, listen: false);
+    final symptomProvider =
+    Provider.of<SymptomLogProvider>(context, listen: false);
+    final navigator = Navigator.of(context);
+
     await authProvider.logout();
-    Provider.of<UserProfileProvider>(context, listen: false).resetProfile();
-    Provider.of<SymptomLogProvider>(context, listen: false).resetLogs();
-    Navigator.pushReplacementNamed(context, 'loginSignUpScreen');
+    profileProvider.resetProfile();
+    symptomProvider.resetLogs();
+    navigator.pushReplacementNamed('loginSignUpScreen');
   }
 
-  /// ── Single source of truth for all cycle calculations ──
+  // ---------------------------------------------------------------------------
+  // DATE HELPERS (calendar dates only, so time of day never skews the counts)
+  // ---------------------------------------------------------------------------
+
+  DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
+
+  DateTime _addDays(DateTime d, int days) =>
+      DateTime(d.year, d.month, d.day + days);
+
+  int _daysBetween(DateTime from, DateTime to) {
+    final a = DateTime.utc(from.year, from.month, from.day);
+    final b = DateTime.utc(to.year, to.month, to.day);
+    return b.difference(a).inDays;
+  }
+
+  String _plural(int n) => n == 1 ? 'day' : 'days';
+
+  String _inDaysLabel(int days) {
+    if (days == 0) return 'Today';
+    if (days == 1) return 'Tomorrow';
+    if (days > 1) return 'In $days days';
+    if (days == -1) return 'Yesterday';
+    return '${days.abs()} days ago';
+  }
+
   /// ── Single source of truth for all cycle calculations ──
   _CycleData _resolveCycleData({
     required DateTime? logDate,
     required DateTime profileDate,
     required int profileCycleLength,
   }) {
-    final today = DateTime.now();
+    final today = _dateOnly(DateTime.now());
+    final profileStart = _dateOnly(profileDate);
+    final logStart = logDate == null ? null : _dateOnly(logDate);
 
-    // RULE: If a formal period log exists, it takes precedence as the latest period.
-    // Otherwise, fall back to the user profile's base date.
-    final lastPeriodDate = (logDate != null && logDate.isAfter(profileDate))
-        ? logDate
-        : profileDate;
+    // RULE: If a formal period log exists and is newer, it takes precedence as
+    // the latest period. Otherwise fall back to the profile's base date.
+    final lastPeriodDate = (logStart != null && logStart.isAfter(profileStart))
+        ? logStart
+        : profileStart;
 
-    // Always use the profile cycle length or the provider's active cycle length uniformly
-    final cycleLength = profileCycleLength;
+    final cycleLength = profileCycleLength <= 0 ? 28 : profileCycleLength;
 
-    final daysSince = today.difference(lastPeriodDate).inDays;
+    final daysSince = _daysBetween(lastPeriodDate, today);
 
-    // Handle edge case where last period is somehow in the future
-    if (daysSince < 0) {
-      return _CycleData(
-        lastPeriodDate: lastPeriodDate,
-        cycleLength: cycleLength,
-        daysUntilNextPeriod: cycleLength,
-        nextPeriodDate: lastPeriodDate.add(Duration(days: cycleLength)),
-        ovulation: lastPeriodDate.add(Duration(days: cycleLength ~/ 2)),
-        fertileStart: lastPeriodDate.add(Duration(days: (cycleLength ~/ 2) - 3)),
-        fertileEnd: lastPeriodDate.add(Duration(days: (cycleLength ~/ 2) + 3)),
-        phase: 'Menstrual',
-      );
-    }
+    // Assume cycles have repeated since the last known period, so the
+    // predictions always point at the current or next cycle.
+    final cyclesElapsed = daysSince <= 0 ? 0 : daysSince ~/ cycleLength;
+    final currentCycleStart =
+    _addDays(lastPeriodDate, cyclesElapsed * cycleLength);
 
-    final cyclesElapsed = daysSince ~/ cycleLength;
-    final nextPeriodDate = lastPeriodDate.add(
-      Duration(days: cycleLength * (cyclesElapsed + 1)),
-    );
+    final nextPeriodDate = _addDays(currentCycleStart, cycleLength);
+    final cycleDay = math.max(_daysBetween(currentCycleStart, today) + 1, 1);
+    final daysUntilNextPeriod = _daysBetween(today, nextPeriodDate);
 
-    // Correct calculation for days until next period remaining in current cycle
-    final daysUntilNextPeriod = cycleLength - (daysSince % cycleLength);
+    // On the day a predicted period begins, say so instead of counting
+    // down a whole new cycle.
+    final periodExpectedToday = cyclesElapsed > 0 && cycleDay == 1;
 
-    // Ovulation is typically 14 days before the *next* expected period
-    final ovulation = nextPeriodDate.subtract(const Duration(days: 14));
-    final fertileStart = ovulation.subtract(const Duration(days: 3));
-    final fertileEnd = ovulation.add(const Duration(days: 3));
+    // Ovulation happens about 14 days BEFORE the next period. Very short
+    // cycles are clamped so it never lands before day 2.
+    final ovulationOffset = cycleLength > 15 ? cycleLength - 14 : 1;
+    final ovulation = _addDays(currentCycleStart, ovulationOffset);
+    final ovulationDay = ovulationOffset + 1; // day 1 = first day of period
 
-    // Phase calculation
-    // Derive cycle day directly from the remaining days to guarantee they always add up correctly to the cycle length
-    final cycleDay = cycleLength - daysUntilNextPeriod + 1;
+    // Fertile window: the 5 days before ovulation, plus ovulation day and the
+    // day after (sperm can survive up to ~5 days, the egg about a day).
+    final fertileStart = _addDays(ovulation, -5);
+    final fertileEnd = _addDays(ovulation, 1);
+    final fertileStartDay = math.max(ovulationDay - 5, 1);
+    final fertileEndDay = math.min(ovulationDay + 1, cycleLength);
+
+    // Phase is worked out from the ovulation day, so it adapts to short and
+    // long cycles instead of using fixed day numbers.
     String phase;
-    if (cycleDay <= 5) {
+    if (cycleDay <= 5 && cycleDay < ovulationDay - 1) {
       phase = 'Menstrual';
-    } else if (cycleDay <= 11) {
-      phase = 'Follicular';
-    } else if (cycleDay <= 17) {
+    } else if (cycleDay >= ovulationDay - 1 && cycleDay <= ovulationDay + 1) {
       phase = 'Ovulation';
+    } else if (cycleDay < ovulationDay - 1) {
+      phase = 'Follicular';
     } else {
       phase = 'Luteal';
     }
@@ -151,24 +190,494 @@ class _HomeScreenState extends State<HomeScreen>
     return _CycleData(
       lastPeriodDate: lastPeriodDate,
       cycleLength: cycleLength,
+      cycleDay: cycleDay,
       daysUntilNextPeriod: daysUntilNextPeriod,
+      periodExpectedToday: periodExpectedToday,
       nextPeriodDate: nextPeriodDate,
       ovulation: ovulation,
       fertileStart: fertileStart,
       fertileEnd: fertileEnd,
+      fertileStartDay: fertileStartDay,
+      fertileEndDay: fertileEndDay,
       phase: phase,
     );
-
   }
 
   String capitalizeFirstLetter(String text) {
     if (text.isEmpty) return text;
     return text[0].toUpperCase() + text.substring(1);
   }
+
+  String _fertileStatus(_CycleData c, DateTime today) {
+    if (today.isBefore(c.fertileStart)) {
+      return 'Starts ${_inDaysLabel(_daysBetween(today, c.fertileStart)).toLowerCase()}';
+    }
+    if (today.isAfter(c.fertileEnd)) return 'Ended';
+    return 'Open now';
+  }
+
+  String _phaseTip(String phase) {
+    switch (phase) {
+      case 'Menstrual':
+        return 'Rest when you need to, stay hydrated, and try gentle movement or warmth to ease cramps.';
+      case 'Follicular':
+        return 'Energy often rises in this phase. A good time to try new activities and plan busy days.';
+      case 'Ovulation':
+        return 'You may feel more energetic and social. Fertility is at its highest around now.';
+      default:
+        return 'Mood and energy can dip before your period. Prioritise sleep, balanced meals and self-care.';
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // UI PIECES
+  // ---------------------------------------------------------------------------
+
+  /// Fade + slide in. Later items take slightly longer, so the screen builds up.
+  Widget _entrance(int index, Widget child) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0, end: 1),
+      duration: Duration(milliseconds: 450 + index * 140),
+      curve: Curves.easeOutCubic,
+      builder: (context, v, c) => Opacity(
+        opacity: v.clamp(0.0, 1.0),
+        child: Transform.translate(
+          offset: Offset(0, (1 - v) * 24),
+          child: c,
+        ),
+      ),
+      child: child,
+    );
+  }
+
+  Widget _heroChip(String text, {IconData? icon}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 14, color: Colors.white),
+            const SizedBox(width: 6),
+          ],
+          Text(
+            text,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _legendDot(Color color, String label) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 9,
+          height: 9,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.9),
+            fontSize: 11.5,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Big gradient card with the segmented cycle ring.
+  Widget _buildHeroCard(
+      _CycleData cycle,
+      double ringSize,
+      bool showPhase,
+      ColorScheme scheme,
+      ) {
+    final gradientEnd =
+    Color.lerp(scheme.primary, const Color(0xFF6D28D9), 0.65)!;
+
+    final periodText = cycle.periodExpectedToday
+        ? 'Period expected today'
+        : 'Period in ${cycle.daysUntilNextPeriod} ${_plural(cycle.daysUntilNextPeriod)}';
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [scheme.primary, gradientEnd],
+        ),
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: scheme.primary.withOpacity(0.35),
+            blurRadius: 28,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              showPhase
+                  ? _heroChip('${cycle.phase} phase',
+                  icon: Icons.auto_awesome)
+                  : _heroChip('Cycle day ${cycle.cycleDay}',
+                  icon: Icons.favorite_rounded),
+              const Spacer(),
+              _heroChip('${cycle.cycleLength}-day cycle'),
+            ],
+          ),
+          const SizedBox(height: 6),
+
+          // Segmented ring
+          SizedBox(
+            width: ringSize,
+            height: ringSize,
+            child: AnimatedBuilder(
+              animation: _controller,
+              builder: (context, _) {
+                final pulse = _controller.value;
+                return TweenAnimationBuilder<double>(
+                  tween: Tween<double>(begin: 0, end: 1),
+                  duration: const Duration(milliseconds: 1100),
+                  curve: Curves.easeOutCubic,
+                  builder: (context, reveal, __) {
+                    return Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // soft breathing glow behind the number
+                        Container(
+                          width: ringSize * 0.62,
+                          height: ringSize * 0.62,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.white
+                                    .withOpacity(0.10 + 0.06 * pulse),
+                                blurRadius: 40 + 20 * pulse,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                          ),
+                        ),
+                        CustomPaint(
+                          size: Size(ringSize, ringSize),
+                          painter: CycleRingPainter(
+                            cycleLength: cycle.cycleLength,
+                            currentDay: cycle.cycleDay,
+                            fertileStartDay:
+                            showPhase ? cycle.fertileStartDay : null,
+                            fertileEndDay:
+                            showPhase ? cycle.fertileEndDay : null,
+                            reveal: reveal,
+                            pulse: pulse,
+                          ),
+                        ),
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'DAY',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.85),
+                                fontSize: 12,
+                                letterSpacing: 3,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              '${cycle.cycleDay}',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: ringSize * 0.25,
+                                fontWeight: FontWeight.w900,
+                                height: 1.05,
+                              ),
+                            ),
+                            Text(
+                              'of ${cycle.cycleLength}',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.85),
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+
+          const SizedBox(height: 6),
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 16,
+            children: [
+              _legendDot(Colors.white, 'Days passed'),
+              if (showPhase)
+                _legendDot(const Color(0xFFFFE08A), 'Fertile window'),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(40),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.water_drop_rounded,
+                    color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    periodText,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Last period started ${DateFormat('MMM d, yyyy').format(cycle.lastPeriodDate)}',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.85),
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Small info tile with a coloured icon.
+  Widget _statTile({
+    required IconData icon,
+    required Color accent,
+    required String label,
+    required String value,
+    required String detail,
+  }) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: accent.withOpacity(0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(9),
+            decoration: BoxDecoration(
+              color: accent.withOpacity(0.14),
+              borderRadius: BorderRadius.circular(13),
+            ),
+            child: Icon(icon, size: 20, color: accent),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12.5,
+              color: scheme.onSurface.withOpacity(0.6),
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            detail,
+            style: TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
+              color: accent,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _tileRow(Widget left, Widget right) {
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(child: left),
+          const SizedBox(width: 12),
+          Expanded(child: right),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTipCard(String phase, ColorScheme scheme) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: scheme.primary.withOpacity(0.07),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: scheme.primary.withOpacity(0.15)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.lightbulb_outline_rounded, color: scheme.primary),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Tip for your $phase phase',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 14.5,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _phaseTip(phase),
+                  style: const TextStyle(fontSize: 13.5, height: 1.4),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeatureCard(BuildContext context,
+      {required String title,
+        required IconData icon,
+        required String routeName}) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(22),
+        onTap: () => Navigator.pushNamed(context, routeName),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: scheme.surface,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: _violet.withOpacity(0.25)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: _violet.withOpacity(0.14),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(icon, size: 24, color: _violet),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(title,
+                    style: AppTextStyles.mediumTextSemiBold(context)),
+              ),
+              Icon(Icons.arrow_forward_ios_rounded,
+                  size: 16, color: scheme.onSurface.withOpacity(0.4)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHydrationBanner() {
+    const blue = Color(0xFF3B82F6);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: blue.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: blue.withOpacity(0.18)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.water_drop_rounded, color: blue),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              appStrings.homeStayHydratedText,
+              style: const TextStyle(fontSize: 13.5, height: 1.4),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // BUILD
+  // ---------------------------------------------------------------------------
+
   @override
   Widget build(BuildContext context) {
     final profileProvider = context.watch<UserProfileProvider>();
     final periodProvider = context.watch<PeriodLogProvider>();
+    final scheme = Theme.of(context).colorScheme;
 
     final profile = profileProvider.userProfile;
     final bool hasProfile = profile != null;
@@ -176,19 +685,26 @@ class _HomeScreenState extends State<HomeScreen>
 
     if (profile != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        context.read<PeriodLogProvider>().setDefaultCycleLength(profile.cycleLength);
+        context
+            .read<PeriodLogProvider>()
+            .setDefaultCycleLength(profile.cycleLength);
       });
     }
 
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        backgroundColor: Colors.transparent,
         title: !hasProfile
             ? Text(appStrings.flowSavvyDashBoardText1,
             style: AppTextStyles.largeTextSemiBold(context))
-            : Text ('Welcome, ${capitalizeFirstLetter(username)} 👋',
-          //  : Text('Welcome, $username 👋',
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            : Text(
+          'Welcome, ${capitalizeFirstLetter(username)} 👋',
+          style:
+          const TextStyle(fontSize: 21, fontWeight: FontWeight.w800),
+        ),
         centerTitle: !hasProfile,
         actions: [
           !hasProfile
@@ -198,11 +714,16 @@ class _HomeScreenState extends State<HomeScreen>
             tooltip: 'logout',
           )
               : Padding(
-            padding: const EdgeInsets.only(right: 24),
-            child: CircleAvatar(
+            padding: const EdgeInsets.only(right: 16),
+            child: Container(
+              decoration: BoxDecoration(
+                color: scheme.primary.withOpacity(0.12),
+                shape: BoxShape.circle,
+              ),
               child: IconButton(
                 onPressed: () => logout(context),
-                icon: const Icon(Icons.logout_outlined),
+                icon: Icon(Icons.logout_rounded, color: scheme.primary),
+                tooltip: 'Logout',
               ),
             ),
           ),
@@ -210,281 +731,236 @@ class _HomeScreenState extends State<HomeScreen>
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
+          // ── No profile yet ──
           if (!hasProfile) {
             return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(appStrings.defaultText,
-                      style: const TextStyle(fontSize: 16),
-                      textAlign: TextAlign.center),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: constraints.maxWidth * 0.5,
-                    child: LongCustomButton(
-                      onTap: () => Navigator.pushNamed(context, '/profile'),
-                      title: 'Go to Profile',
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(22),
+                      decoration: BoxDecoration(
+                        color: scheme.primary.withOpacity(0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.person_add_alt_1_rounded,
+                          size: 44, color: scheme.primary),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 20),
+                    Text(appStrings.defaultText,
+                        style: const TextStyle(fontSize: 16, height: 1.4),
+                        textAlign: TextAlign.center),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: constraints.maxWidth * 0.6,
+                      child: LongCustomButton(
+                        onTap: () => Navigator.pushNamed(context, '/profile'),
+                        title: 'Go to Profile',
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           }
 
           // ── All cycle data resolved in one call ──
-          final periodProvider = context.watch<PeriodLogProvider>(); // Make sure provider is watched
-
           final cycle = _resolveCycleData(
             logDate: periodProvider.latestLog?.startDate,
             profileDate: profile.lastPeriodDate,
-            // 🔑 Use the provider's dynamic cycle length method instead of the static profile length
+            // Use the provider's dynamic cycle length, not the static profile one
             profileCycleLength: periodProvider.getEffectiveCycleLength(),
           );
 
-          final today = DateTime.now();
-          final color = Theme.of(context).colorScheme;
-
-          final borderColor = (cycle.daysUntilNextPeriod <= 2)
-              ? Colors.pink.shade100
-              : Colors.grey.shade400;
-
-          final progress = today
-              .difference(cycle.lastPeriodDate)
-              .inDays
-              .toDouble() /
-              cycle.cycleLength.clamp(1, 365);
-
-          final double ringSize = math.min(constraints.maxWidth * 0.75, 300.0);
-          final double innerRingSize = ringSize * 0.88;
-
-          final formattedNextPeriod =
-          DateFormat('MMM dd').format(cycle.nextPeriodDate);
-          final periodStatus = _getPeriodStatus(cycle.nextPeriodDate, today);
+          final today = _dateOnly(DateTime.now());
+          final showPhase = profile.age >= 23;
+          // Ring size: raise or lower the 0.52 / 200 to resize the whole card
+          final ringSize = math.min(constraints.maxWidth * 0.52, 200.0);
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(getFormattedDate(), style: AppTextStyles.semiBold(context)),
-                const SizedBox(height: 16),
-
-                // Cycle Summary Card
-                Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  child: ListTile(
-                    title: Text(
-                      _getCycleDayText(cycle.cycleLength, cycle.daysUntilNextPeriod),
-                      style: AppTextStyles.smallTextRegular(context),
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 28),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 520),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _entrance(
+                      0,
+                      Padding(
+                        padding: const EdgeInsets.only(left: 4, bottom: 14),
+                        child: Text(getFormattedDate(),
+                            style: AppTextStyles.semiBold(context)),
+                      ),
                     ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.favorite, color: color.primary, size: 16),
-                            const SizedBox(width: 4),
-                            Text(
-                              _getOvulationCountdown(cycle.ovulation, today),
-                              style: AppTextStyles.smallTextRegular(context)
-                                  .copyWith(fontSize: 12),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 5),
-                        if (profile.age >= 23) ...[
-                          Text(
-                            'Phase: ${cycle.phase}',
-                            style: AppTextStyles.smallTextRegular(context)
-                                .copyWith(fontSize: 12, fontWeight: FontWeight.w600),
-                          ),
-                          Text(
-                            'Fertile Window: ${DateFormat('MMM d').format(cycle.fertileStart)} - ${DateFormat('MMM d').format(cycle.fertileEnd)}',
-                            style: AppTextStyles.smallTextRegular(context)
-                                .copyWith(fontSize: 12, fontWeight: FontWeight.w600),
-                          ),
-                        ],
-                      ],
+
+                    _entrance(
+                      1,
+                      _buildHeroCard(cycle, ringSize, showPhase, scheme),
                     ),
-                  ),
-                ),
+                    const SizedBox(height: 16),
 
-                const SizedBox(height: 24),
-
-                // Progress Ring
-                Center(
-                  child: SizedBox(
-                    width: ringSize,
-                    height: ringSize,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 500),
-                          width: ringSize,
-                          height: ringSize,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                                color: borderColor,
-                                width: 2.0 + _pulseAnimation.value),
-                          ),
+                    _entrance(
+                      2,
+                      _tileRow(
+                        _statTile(
+                          icon: Icons.calendar_today_rounded,
+                          accent: scheme.primary,
+                          label: 'Next period',
+                          value:
+                          DateFormat('MMM d').format(cycle.nextPeriodDate),
+                          detail: _inDaysLabel(cycle.daysUntilNextPeriod),
                         ),
-                        SizedBox(
-                          width: innerRingSize,
-                          height: innerRingSize,
-                          child: CustomPaint(
-                            painter: ProgressRingPainter(
-                                progress: progress.clamp(0.0, 1.0),
-                                color: color.primary),
-                          ),
+                        _statTile(
+                          icon: Icons.favorite_rounded,
+                          accent: _violet,
+                          label: 'Ovulation',
+                          value: DateFormat('MMM d').format(cycle.ovulation),
+                          detail: _inDaysLabel(
+                              _daysBetween(today, cycle.ovulation)),
                         ),
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 500),
-                          width: innerRingSize,
-                          height: innerRingSize,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                                color: borderColor,
-                                width: 1.0 + (_pulseAnimation.value / 2)),
-                          ),
-                        ),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: Colors.deepPurple.shade200,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: const Text('Period in:',
-                                  style: TextStyle(color: Colors.white)),
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              cycle.daysUntilNextPeriod > 0
-                                  ? '${cycle.daysUntilNextPeriod} days'
-                                  : (cycle.daysUntilNextPeriod == 0
-                                  ? 'Today'
-                                  : '${cycle.daysUntilNextPeriod.abs()} days late'),
-                              style: const TextStyle(
-                                  fontSize: 26, fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Last period start date - ${DateFormat('MMMM d yyyy').format(cycle.lastPeriodDate)}',
-                              textAlign: TextAlign.center,
-                              style: AppTextStyles.semiBold(context)
-                                  .copyWith(fontSize: 9),
-                            ),
-                          ],
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
+
+                    if (showPhase) ...[
+                      const SizedBox(height: 12),
+                      _entrance(
+                        3,
+                        _tileRow(
+                          _statTile(
+                            icon: Icons.bubble_chart_rounded,
+                            accent: _teal,
+                            label: 'Current phase',
+                            value: cycle.phase,
+                            detail: 'Day ${cycle.cycleDay}',
+                          ),
+                          _statTile(
+                            icon: Icons.spa_rounded,
+                            accent: _amber,
+                            label: 'Fertile window',
+                            value:
+                            '${DateFormat('MMM d').format(cycle.fertileStart)} - ${DateFormat('MMM d').format(cycle.fertileEnd)}',
+                            detail: _fertileStatus(cycle, today),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _entrance(4, _buildTipCard(cycle.phase, scheme)),
+                    ],
+
+                    if (profile.age >= 40) ...[
+                      const SizedBox(height: 16),
+                      _entrance(
+                        5,
+                        _buildFeatureCard(
+                          context,
+                          title: 'Menopause Tips',
+                          icon: Icons.female,
+                          routeName: '/menopause',
+                        ),
+                      ),
+                    ],
+
+                    const SizedBox(height: 16),
+                    _entrance(6, _buildHydrationBanner()),
+                  ],
                 ),
-
-                const SizedBox(height: 24),
-
-                // Next Period Card
-                Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  child: ListTile(
-                    title: Text('Next Period',
-                        style: AppTextStyles.smallTextRegular(context)),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.calendar_today,
-                            color: color.primary, size: 16),
-                        const SizedBox(width: 4),
-                        Text('$formattedNextPeriod • in ${cycle.daysUntilNextPeriod} days',
-                            style: TextStyle(color: Colors.grey[700])),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 10),
-
-                if (profile.age >= 40)
-                  _buildFeatureCard(
-                    context,
-                    title: 'Menopause Tips',
-                    icon: Icons.female,
-                    routeName: '/menopause',
-                  ),
-
-                const SizedBox(height: 10),
-
-                Center(
-                  child: Text(
-                    appStrings.homeStayHydratedText,
-                    style: TextStyle(color: Colors.grey[700]),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-
-                const SizedBox(height: 10),
-              ],
+              ),
             ),
           );
         },
       ),
     );
   }
+}
 
-  String _getPeriodStatus(DateTime predictedDate, DateTime today) {
-    final daysLate = today.difference(predictedDate).inDays;
-    if (daysLate == 0) return 'due today';
-    if (daysLate > 0) return '$daysLate days late';
-    return 'in ${daysLate.abs()} days';
+/// Ring made of one small segment per cycle day.
+/// Past days are filled, today glows, future days are faded, and the fertile
+/// window (when shown) is tinted amber.
+class CycleRingPainter extends CustomPainter {
+  final int cycleLength;
+  final int currentDay;
+  final int? fertileStartDay;
+  final int? fertileEndDay;
+  final double reveal; // 0..1 intro animation
+  final double pulse; // 0..1 breathing glow
+
+  static const Color _fertileColor = Color(0xFFFFE08A);
+
+  CycleRingPainter({
+    required this.cycleLength,
+    required this.currentDay,
+    required this.fertileStartDay,
+    required this.fertileEndDay,
+    required this.reveal,
+    required this.pulse,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (cycleLength <= 0) return;
+
+    final strokeWidth = size.width * 0.05;
+    final radius = size.width / 2 - strokeWidth * 1.2;
+    final rect = Rect.fromCircle(center: size.center(Offset.zero), radius: radius);
+
+    final seg = 2 * math.pi / cycleLength;
+    final gap = seg * 0.32;
+    final reachedDays = (currentDay * reveal).round();
+
+    for (var i = 0; i < cycleLength; i++) {
+      final day = i + 1;
+      final start = -math.pi / 2 + i * seg + gap / 2;
+      final sweep = seg - gap;
+
+      final isFertile = fertileStartDay != null &&
+          fertileEndDay != null &&
+          day >= fertileStartDay! &&
+          day <= fertileEndDay!;
+      final isToday = day == currentDay;
+      final isPast = day < currentDay;
+      final reached = day <= reachedDays;
+
+      final baseColor = isFertile ? _fertileColor : Colors.white;
+      final filled = (isPast || isToday) && reached;
+
+      // Glow under today's segment
+      if (isToday && reached) {
+        final glow = Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeCap = StrokeCap.round
+          ..strokeWidth = strokeWidth * 2.4
+          ..color = Colors.white.withOpacity(0.5 + 0.25 * pulse)
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, 5 + pulse * 5);
+        canvas.drawArc(rect, start, sweep, false, glow);
+      }
+
+      final paint = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round
+        ..strokeWidth = isToday ? strokeWidth * 1.5 : strokeWidth
+        ..color = filled
+            ? baseColor
+            : baseColor.withOpacity(isFertile ? 0.5 : 0.22);
+
+      canvas.drawArc(rect, start, sweep, false, paint);
+    }
   }
 
-  String _getOvulationCountdown(DateTime date, DateTime today) {
-    final difference = date.difference(today).inDays;
-    if (difference > 0) return 'Ovulation in $difference days';
-    if (difference == 0) return 'Ovulation is today!';
-    return 'Ovulation was ${difference.abs()} days ago';
-  }
-
-  String _getCycleDayText(int cycleLen, int daysUntilNextPeriod) {
-    // Derive the current cycle day directly from the synchronized remaining days
-    final dayOfCycle = cycleLen - daysUntilNextPeriod + 1;
-    return 'Day $dayOfCycle of $cycleLen-day cycle';
-  }
-
-  Widget _buildFeatureCard(BuildContext context,
-      {required String title,
-        required IconData icon,
-        required String routeName}) {
-    return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, routeName),
-      child: Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Row(
-            children: [
-              Icon(icon, size: 30, color: Theme.of(context).colorScheme.primary),
-              const SizedBox(width: 10),
-              Text(title, style: AppTextStyles.mediumTextSemiBold(context)),
-            ],
-          ),
-        ),
-      ),
-    );
+  @override
+  bool shouldRepaint(covariant CycleRingPainter old) {
+    return old.cycleLength != cycleLength ||
+        old.currentDay != currentDay ||
+        old.fertileStartDay != fertileStartDay ||
+        old.fertileEndDay != fertileEndDay ||
+        old.reveal != reveal ||
+        old.pulse != pulse;
   }
 }
 
+/// Kept from the previous version in case another file still uses it.
 class ProgressRingPainter extends CustomPainter {
   final double progress;
   final Color color;
