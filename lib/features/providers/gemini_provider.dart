@@ -1,18 +1,27 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import '../models/gemini_response_model.dart';
 
 class GeminiProvider with ChangeNotifier {
+  // Newest first (index 0 = most recent question)
   final List<GeminiResponseModel> _responses = [];
 
-  List<GeminiResponseModel> get responses => [..._responses];
+  /// Only ever shows the chats of the user who is signed in right now, so one
+  /// person's questions are never visible to the next person who logs in.
+  List<GeminiResponseModel> get responses =>
+      _historyUid == FirebaseAuth.instance.currentUser?.uid
+          ? [..._responses]
+          : const [];
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
+
   String? _pendingQuery;
   String? get pendingQuery => _pendingQuery;
 
@@ -39,6 +48,185 @@ class GeminiProvider with ChangeNotifier {
   static const String _baseUrl =
       'https://generativelanguage.googleapis.com/v1beta/models';
 
+  /// How many past messages are loaded from Firebase when the chat opens.
+  static const int _historyLimit = 200;
+
+  // ---------------------------------------------------------------------------
+  // CHAT HISTORY (saved in Firebase under the signed-in user)
+  //   users/{uid}/gemini_chats/{chatId}
+  //     userQuery: String, answer: String, createdAt: Timestamp
+  // ---------------------------------------------------------------------------
+
+  /// The user whose chats are currently held in memory.
+  String? _historyUid;
+
+  /// The user whose history has already been loaded from Firebase.
+  String? _loadedForUid;
+
+  bool _isHistoryLoading = false;
+  bool get isHistoryLoading => _isHistoryLoading;
+
+  // The model class has no id / date fields, so they are kept on the side.
+  final Map<GeminiResponseModel, String> _docIds = Map.identity();
+  final Map<GeminiResponseModel, DateTime> _createdAt = Map.identity();
+
+  /// When a message was asked (null if unknown).
+  DateTime? createdAtOf(GeminiResponseModel m) => _createdAt[m];
+
+  CollectionReference<Map<String, dynamic>>? _chatCollection() {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return null;
+    return FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('gemini_chats');
+  }
+
+  /// Makes sure the chats in memory belong to the signed-in user. If someone
+  /// else was using the app before, their chats are dropped.
+  String? _syncOwner() {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (_historyUid != uid) {
+      _responses.clear();
+      _docIds.clear();
+      _createdAt.clear();
+      _historyUid = uid;
+      _loadedForUid = null;
+    }
+    return uid;
+  }
+
+  /// Loads the signed-in user's saved chats from Firebase. Safe to call every
+  /// time the chat screen opens: it only loads once per user.
+  Future<void> loadHistory({bool force = false}) async {
+    final uid = _syncOwner();
+    if (uid == null) {
+      notifyListeners();
+      return;
+    }
+    if (_loadedForUid == uid && !force) return;
+    if (_isHistoryLoading) return;
+
+    final col = _chatCollection();
+    if (col == null) return;
+
+    _isHistoryLoading = true;
+    notifyListeners();
+
+    try {
+      final snap = await col
+          .orderBy('createdAt', descending: true)
+          .limit(_historyLimit)
+          .get();
+
+      // The user changed while we were loading: throw this result away
+      if (FirebaseAuth.instance.currentUser?.uid != uid) return;
+
+      final loaded = <GeminiResponseModel>[];
+      final loadedIds = <String>{};
+
+      for (final d in snap.docs) {
+        final data = d.data();
+        final q = data['userQuery'];
+        final a = data['answer'];
+        if (q is! String || a is! String) continue;
+
+        final m = GeminiResponseModel(userQuery: q, answer: a);
+        _docIds[m] = d.id;
+        final ts = data['createdAt'];
+        if (ts is Timestamp) _createdAt[m] = ts.toDate();
+
+        loaded.add(m);
+        loadedIds.add(d.id);
+      }
+
+      // Keep anything asked while the history was still loading
+      final extras = _responses.where((r) {
+        final id = _docIds[r];
+        return id == null || !loadedIds.contains(id);
+      }).toList();
+
+      _responses
+        ..clear()
+        ..addAll(extras)
+        ..addAll(loaded);
+
+      _loadedForUid = uid;
+    } catch (e) {
+      debugPrint('GEMINI HISTORY LOAD ERROR: $e');
+    } finally {
+      _isHistoryLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Call on logout if you want the chats removed from memory straight away.
+  void resetChats() {
+    _responses.clear();
+    _docIds.clear();
+    _createdAt.clear();
+    _historyUid = null;
+    _loadedForUid = null;
+    notifyListeners();
+  }
+
+  /// Saves a new question and answer. Not awaited: the chat shows instantly,
+  /// and Firebase syncs in the background (also works offline).
+  void _saveToFirestore(GeminiResponseModel m) {
+    final col = _chatCollection();
+    if (col == null) return;
+
+    final ref = col.doc();
+    final now = DateTime.now();
+    _docIds[m] = ref.id;
+    _createdAt[m] = now;
+
+    ref.set({
+      'userQuery': m.userQuery,
+      'answer': m.answer,
+      'createdAt': Timestamp.fromDate(now),
+    }).catchError((Object e) {
+      debugPrint('GEMINI SAVE ERROR: $e');
+    });
+  }
+
+  void _deleteFromFirestore(GeminiResponseModel m) {
+    final col = _chatCollection();
+    final id = _docIds[m];
+    if (col == null || id == null) return;
+
+    col.doc(id).delete().catchError((Object e) {
+      debugPrint('GEMINI DELETE ERROR: $e');
+    });
+  }
+
+  Future<void> _deleteAllFromFirestore() async {
+    final col = _chatCollection();
+    if (col == null) return;
+
+    try {
+      final snap = await col.get();
+      var batch = FirebaseFirestore.instance.batch();
+      var count = 0;
+
+      for (final d in snap.docs) {
+        batch.delete(d.reference);
+        count++;
+        if (count == 400) {
+          await batch.commit();
+          batch = FirebaseFirestore.instance.batch();
+          count = 0;
+        }
+      }
+      if (count > 0) await batch.commit();
+
+      _docIds.clear();
+      _createdAt.clear();
+    } catch (e) {
+      debugPrint('GEMINI CLEAR ERROR: $e');
+    }
+  }
+
   // ---------------------------------------------------------------------------
   // PUBLIC API
   // ---------------------------------------------------------------------------
@@ -46,6 +234,8 @@ class GeminiProvider with ChangeNotifier {
   Future<void> getGeminiResponse(String query) async {
     // Ignore taps while a request is already running
     if (_isLoading) return;
+
+    _syncOwner();
 
     _isLoading = true;
     _pendingQuery = query;
@@ -55,19 +245,26 @@ class GeminiProvider with ChangeNotifier {
       final prompt = _buildPrompt(query);
       final answer = await _generateWithFallback(prompt);
 
-      _responses.insert(
-        0,
-        GeminiResponseModel(
-          userQuery: query,
-          answer: (answer == null || answer.isEmpty)
-              ? 'Sorry, no response available. Please try rephrasing your question.'
-              : answer,
-        ),
-      );
+      if (answer == null || answer.isEmpty) {
+        // Not saved: this is not a real answer
+        _responses.insert(
+          0,
+          GeminiResponseModel(
+            userQuery: query,
+            answer:
+            'Sorry, no response available. Please try rephrasing your question.',
+          ),
+        );
+      } else {
+        final result = GeminiResponseModel(userQuery: query, answer: answer);
+        _responses.insert(0, result);
+        _saveToFirestore(result); // keep it in the user's history
+      }
     } catch (e, stackTrace) {
       debugPrint('GEMINI ERROR: $e');
       debugPrint('GEMINI STACK TRACE: $stackTrace');
 
+      // Not saved: error messages should not clutter the history
       _responses.insert(
         0,
         GeminiResponseModel(
@@ -85,12 +282,14 @@ class GeminiProvider with ChangeNotifier {
   void clearResponses() {
     _responses.clear();
     notifyListeners();
+    _deleteAllFromFirestore();
   }
 
   // Returns the removed item so it can be restored (Undo).
   GeminiResponseModel removeResponseAt(int index) {
     final removed = _responses.removeAt(index);
     notifyListeners();
+    _deleteFromFirestore(removed);
     return removed;
   }
 
@@ -101,6 +300,20 @@ class GeminiProvider with ChangeNotifier {
       _responses.insert(index, response);
     }
     notifyListeners();
+
+    // Undo: put the saved copy back with its original id and date
+    final col = _chatCollection();
+    final id = _docIds[response];
+    if (col != null && id != null) {
+      col.doc(id).set({
+        'userQuery': response.userQuery,
+        'answer': response.answer,
+        'createdAt':
+        Timestamp.fromDate(_createdAt[response] ?? DateTime.now()),
+      }).catchError((Object e) {
+        debugPrint('GEMINI RESTORE ERROR: $e');
+      });
+    }
   }
 
   // ---------------------------------------------------------------------------
