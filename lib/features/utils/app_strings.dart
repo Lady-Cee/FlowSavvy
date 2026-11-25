@@ -13,7 +13,7 @@ class AppStrings {
 
         // Home
         'defaultText': 'Please complete your profile to get predictions.',
-        'flowSavvyDashBoardText1': 'Flow Savvy Dashboard',
+        'periodRealDashBoardText1': 'PeriodReal Dashboard',
         'homeStayHydratedText': 'Stay hydrated and maintain a healthy routine 🌸',
 
 
@@ -102,7 +102,7 @@ class AppStrings {
 
   // home
   String get defaultText => _localizedStrings['defaultText']!;
-  String get flowSavvyDashBoardText1 => _localizedStrings['flowSavvyDashBoardText1']!;
+  String get periodRealDashBoardText1 => _localizedStrings['periodRealDashBoardText1']!;
   String get homeStayHydratedText => _localizedStrings['homeStayHydratedText']!;
 
   // for onboarding pages

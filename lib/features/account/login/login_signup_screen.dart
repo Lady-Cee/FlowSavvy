@@ -127,8 +127,8 @@ class _LoginSignUpScreenState extends State<LoginSignUpScreen>
                   const SizedBox(height: 4),
                   Text(
                     isLogin
-                        ? 'Log in to keep tracking your cycle'
-                        : 'Sign up to start tracking your cycle and health',
+                        ? 'Log in to track your cycle, access menstrual health resources, request pads or manage your organisation\'s support activities.'
+                        : 'Join PeriodReal to access menstrual health resources, track your cycle, request pads, connect with experts or register your organisation to support girls and women with menstrual health services.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white.withOpacity(0.9),

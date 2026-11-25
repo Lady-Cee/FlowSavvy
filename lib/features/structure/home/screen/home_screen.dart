@@ -10,7 +10,6 @@ import '../../../providers/user_profile_provider.dart';
 import '../../../utils/app_strings.dart';
 import '../../../utils/app_text_styles.dart';
 import '../../../utils/get_date_formatter.dart';
-import '../../../widgets/long_custom_button.dart';
 
 // ── Holds all resolved cycle data in one place ──
 class _CycleData {
@@ -670,6 +669,179 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   // ---------------------------------------------------------------------------
+  // HEADER
+  // ---------------------------------------------------------------------------
+
+  /// Time-of-day greeting word.
+  String _greetingWord() {
+    final h = DateTime.now().hour;
+    if (h < 12) return 'Good morning';
+    if (h < 17) return 'Good afternoon';
+    return 'Good evening';
+  }
+
+  /// Modern in-page header: gradient avatar, greeting, date pill, logout.
+  Widget _buildHeader(String name, ColorScheme scheme) {
+    final end = Color.lerp(scheme.primary, const Color(0xFF6D28D9), 0.65)!;
+    final initial = name.isEmpty ? '?' : name[0].toUpperCase();
+
+    return Row(
+      children: [
+        // Gradient avatar with initial
+        Container(
+          width: 52,
+          height: 52,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [scheme.primary, end],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: scheme.primary.withOpacity(0.35),
+                blurRadius: 14,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Text(
+            initial,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _greetingWord().toUpperCase(),
+                style: TextStyle(
+                  fontSize: 11,
+                  letterSpacing: 2,
+                  fontWeight: FontWeight.w700,
+                  color: scheme.onSurface.withOpacity(0.55),
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                '$name 👋',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 24,
+                  height: 1.15,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Container(
+                padding:
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: scheme.primary.withOpacity(0.10),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.calendar_today_rounded,
+                        size: 12, color: scheme.primary),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        getFormattedDate(),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: scheme.primary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 10),
+        // Logout button
+        Tooltip(
+          message: 'Logout',
+          child: Material(
+            color: scheme.primary.withOpacity(0.10),
+            shape: const CircleBorder(),
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: () => logout(context),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Icon(Icons.logout_rounded,
+                    color: scheme.primary, size: 22),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Full-width gradient button (same look as the login screen).
+  Widget _gradientButton({
+    required String label,
+    required IconData icon,
+    required VoidCallback onTap,
+    required ColorScheme scheme,
+  }) {
+    final end = Color.lerp(scheme.primary, const Color(0xFF6D28D9), 0.65)!;
+    return Container(
+      height: 54,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        gradient: LinearGradient(colors: [scheme.primary, end]),
+        boxShadow: [
+          BoxShadow(
+            color: scheme.primary.withOpacity(0.35),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18),
+          onTap: onTap,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(icon, color: Colors.white, size: 20),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
   // BUILD
   // ---------------------------------------------------------------------------
 
@@ -692,185 +864,172 @@ class _HomeScreenState extends State<HomeScreen>
     }
 
     return Scaffold(
-      appBar: AppBar(
+      // Signed-in users get the in-page header instead of an AppBar
+      appBar: hasProfile
+          ? null
+          : AppBar(
         automaticallyImplyLeading: false,
         elevation: 0,
         scrolledUnderElevation: 0,
         backgroundColor: Colors.transparent,
-        title: !hasProfile
-            ? Text(appStrings.flowSavvyDashBoardText1,
-            style: AppTextStyles.largeTextSemiBold(context))
-            : Text(
-          'Welcome, ${capitalizeFirstLetter(username)} 👋',
-          style:
-          const TextStyle(fontSize: 21, fontWeight: FontWeight.w800),
-        ),
-        centerTitle: !hasProfile,
+        centerTitle: true,
+        title: Text(appStrings.periodRealDashBoardText1,
+            style: AppTextStyles.largeTextSemiBold(context)),
         actions: [
-          !hasProfile
-              ? IconButton(
+          IconButton(
             onPressed: () => logout(context),
             icon: const Icon(Icons.exit_to_app),
             tooltip: 'logout',
-          )
-              : Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Container(
-              decoration: BoxDecoration(
-                color: scheme.primary.withOpacity(0.12),
-                shape: BoxShape.circle,
-              ),
-              child: IconButton(
-                onPressed: () => logout(context),
-                icon: Icon(Icons.logout_rounded, color: scheme.primary),
-                tooltip: 'Logout',
-              ),
-            ),
           ),
         ],
       ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          // ── No profile yet ──
-          if (!hasProfile) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(22),
-                      decoration: BoxDecoration(
-                        color: scheme.primary.withOpacity(0.12),
-                        shape: BoxShape.circle,
+      body: SafeArea(
+        bottom: false,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // ── No profile yet ──
+            if (!hasProfile) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(22),
+                        decoration: BoxDecoration(
+                          color: scheme.primary.withOpacity(0.12),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(Icons.person_add_alt_1_rounded,
+                            size: 44, color: scheme.primary),
                       ),
-                      child: Icon(Icons.person_add_alt_1_rounded,
-                          size: 44, color: scheme.primary),
-                    ),
-                    const SizedBox(height: 20),
-                    Text(appStrings.defaultText,
-                        style: const TextStyle(fontSize: 16, height: 1.4),
-                        textAlign: TextAlign.center),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: constraints.maxWidth * 0.6,
-                      child: LongCustomButton(
-                        onTap: () => Navigator.pushNamed(context, '/profile'),
-                        title: 'Go to Profile',
+                      const SizedBox(height: 20),
+                      Text(appStrings.defaultText,
+                          style: const TextStyle(fontSize: 16, height: 1.4),
+                          textAlign: TextAlign.center),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: constraints.maxWidth * 0.6,
+                        child: _gradientButton(
+                          label: 'Go to Profile',
+                          icon: Icons.arrow_forward_rounded,
+                          onTap: () => Navigator.pushNamed(context, '/profile'),
+                          scheme: scheme,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            // ── All cycle data resolved in one call ──
+            final cycle = _resolveCycleData(
+              logDate: periodProvider.latestLog?.startDate,
+              profileDate: profile.lastPeriodDate,
+              // Use the provider's dynamic cycle length, not the static profile one
+              profileCycleLength: periodProvider.getEffectiveCycleLength(),
+            );
+
+            final today = _dateOnly(DateTime.now());
+            final showPhase = profile.age >= 23;
+            // Ring size: raise or lower the 0.52 / 200 to resize the whole card
+            final ringSize = math.min(constraints.maxWidth * 0.52, 200.0);
+
+            return SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 520),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _entrance(
+                        0,
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 18),
+                          child: _buildHeader(
+                              capitalizeFirstLetter(username), scheme),
+                        ),
+                      ),
+
+                      _entrance(
+                        1,
+                        _buildHeroCard(cycle, ringSize, showPhase, scheme),
+                      ),
+                      const SizedBox(height: 16),
+
+                      _entrance(
+                        2,
+                        _tileRow(
+                          _statTile(
+                            icon: Icons.calendar_today_rounded,
+                            accent: scheme.primary,
+                            label: 'Next period',
+                            value:
+                            DateFormat('MMM d').format(cycle.nextPeriodDate),
+                            detail: _inDaysLabel(cycle.daysUntilNextPeriod),
+                          ),
+                          _statTile(
+                            icon: Icons.favorite_rounded,
+                            accent: _violet,
+                            label: 'Ovulation',
+                            value: DateFormat('MMM d').format(cycle.ovulation),
+                            detail: _inDaysLabel(
+                                _daysBetween(today, cycle.ovulation)),
+                          ),
+                        ),
+                      ),
+
+                      if (showPhase) ...[
+                        const SizedBox(height: 12),
+                        _entrance(
+                          3,
+                          _tileRow(
+                            _statTile(
+                              icon: Icons.bubble_chart_rounded,
+                              accent: _teal,
+                              label: 'Current phase',
+                              value: cycle.phase,
+                              detail: 'Day ${cycle.cycleDay}',
+                            ),
+                            _statTile(
+                              icon: Icons.spa_rounded,
+                              accent: _amber,
+                              label: 'Fertile window',
+                              value:
+                              '${DateFormat('MMM d').format(cycle.fertileStart)} - ${DateFormat('MMM d').format(cycle.fertileEnd)}',
+                              detail: _fertileStatus(cycle, today),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        _entrance(4, _buildTipCard(cycle.phase, scheme)),
+                      ],
+
+                      if (profile.age >= 40) ...[
+                        const SizedBox(height: 16),
+                        _entrance(
+                          5,
+                          _buildFeatureCard(
+                            context,
+                            title: 'Menopause Tips',
+                            icon: Icons.female,
+                            routeName: '/menopause',
+                          ),
+                        ),
+                      ],
+
+                      const SizedBox(height: 16),
+                      _entrance(6, _buildHydrationBanner()),
+                    ],
+                  ),
                 ),
               ),
             );
-          }
-
-          // ── All cycle data resolved in one call ──
-          final cycle = _resolveCycleData(
-            logDate: periodProvider.latestLog?.startDate,
-            profileDate: profile.lastPeriodDate,
-            // Use the provider's dynamic cycle length, not the static profile one
-            profileCycleLength: periodProvider.getEffectiveCycleLength(),
-          );
-
-          final today = _dateOnly(DateTime.now());
-          final showPhase = profile.age >= 23;
-          // Ring size: raise or lower the 0.52 / 200 to resize the whole card
-          final ringSize = math.min(constraints.maxWidth * 0.52, 200.0);
-
-          return SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 28),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 520),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _entrance(
-                      0,
-                      Padding(
-                        padding: const EdgeInsets.only(left: 4, bottom: 14),
-                        child: Text(getFormattedDate(),
-                            style: AppTextStyles.semiBold(context)),
-                      ),
-                    ),
-
-                    _entrance(
-                      1,
-                      _buildHeroCard(cycle, ringSize, showPhase, scheme),
-                    ),
-                    const SizedBox(height: 16),
-
-                    _entrance(
-                      2,
-                      _tileRow(
-                        _statTile(
-                          icon: Icons.calendar_today_rounded,
-                          accent: scheme.primary,
-                          label: 'Next period',
-                          value:
-                          DateFormat('MMM d').format(cycle.nextPeriodDate),
-                          detail: _inDaysLabel(cycle.daysUntilNextPeriod),
-                        ),
-                        _statTile(
-                          icon: Icons.favorite_rounded,
-                          accent: _violet,
-                          label: 'Ovulation',
-                          value: DateFormat('MMM d').format(cycle.ovulation),
-                          detail: _inDaysLabel(
-                              _daysBetween(today, cycle.ovulation)),
-                        ),
-                      ),
-                    ),
-
-                    if (showPhase) ...[
-                      const SizedBox(height: 12),
-                      _entrance(
-                        3,
-                        _tileRow(
-                          _statTile(
-                            icon: Icons.bubble_chart_rounded,
-                            accent: _teal,
-                            label: 'Current phase',
-                            value: cycle.phase,
-                            detail: 'Day ${cycle.cycleDay}',
-                          ),
-                          _statTile(
-                            icon: Icons.spa_rounded,
-                            accent: _amber,
-                            label: 'Fertile window',
-                            value:
-                            '${DateFormat('MMM d').format(cycle.fertileStart)} - ${DateFormat('MMM d').format(cycle.fertileEnd)}',
-                            detail: _fertileStatus(cycle, today),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      _entrance(4, _buildTipCard(cycle.phase, scheme)),
-                    ],
-
-                    if (profile.age >= 40) ...[
-                      const SizedBox(height: 16),
-                      _entrance(
-                        5,
-                        _buildFeatureCard(
-                          context,
-                          title: 'Menopause Tips',
-                          icon: Icons.female,
-                          routeName: '/menopause',
-                        ),
-                      ),
-                    ],
-
-                    const SizedBox(height: 16),
-                    _entrance(6, _buildHydrationBanner()),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
+          },
+        ),
       ),
     );
   }
